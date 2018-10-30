@@ -10,6 +10,7 @@ using NzbDrone.Core.DecisionEngine;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.MediaFiles.MediaInfo;
+using NzbDrone.Core.MetadataSource.RadarrAPI;
 using NzbDrone.Core.Movies.AlternativeTitles;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Parser.RomanNumerals;
@@ -22,7 +23,7 @@ namespace NzbDrone.Core.Parser
     public interface IParsingService
     {
         LocalMovie GetLocalMovie(string filename, ParsedMovieInfo minimalInfo, Movie movie, List<object> helpers, bool sceneSource = false);
-        Movie GetMovie(string title);
+        MappingResult GetMovie(string title);
         MappingResult Map(ParsedMovieInfo parsedMovieInfo, string imdbId, SearchCriteriaBase searchCriteria = null);
         ParsedMovieInfo ParseMovieInfo(string title, List<object> helpers);
         ParsedMovieInfo ParseMoviePathInfo(string path, List<object> helpers);
@@ -218,23 +219,31 @@ namespace NzbDrone.Core.Parser
             return result;
         }
 
-        public Movie GetMovie(string title)
+        public MappingResult GetMovie(string title)
         {
             var parsedMovieInfo = Parser.ParseMovieTitle(title, _config.ParsingLeniency > 0);
 
             if (parsedMovieInfo == null)
             {
-                return _movieService.FindByTitle(title);
+                var movie = _movieService.FindByTitle(title);
+                if (movie != null)
+                {
+                    return new MappingResult
+                    {
+                        MappingResultType = MappingResultType.Success,
+                        Movie = movie,
+                        ReleaseName = title
+                    };
+                }
+
+                return new MappingResult
+                {
+                    MappingResultType = MappingResultType.NotParsable,
+                    ReleaseName = title
+                };
             }
 
-            var movies = _movieService.FindByTitle(parsedMovieInfo.MovieTitle, parsedMovieInfo.Year);
-
-            if (movies == null)
-            {
-                movies = _movieService.FindByTitle(parsedMovieInfo.MovieTitle.Replace("DC", "").Trim());
-            }
-
-            return movies;
+            return Map(parsedMovieInfo, parsedMovieInfo.ImdbId);
         }
 
         public MappingResult Map(ParsedMovieInfo parsedMovieInfo, string imdbId, SearchCriteriaBase searchCriteria = null)
@@ -440,6 +449,18 @@ namespace NzbDrone.Core.Parser
 
     public class MappingResult
     {
+        public MappingResult()
+        {
+            
+        }
+
+        public MappingResult(Movie movie)
+        {
+            this.Movie = movie;
+            this.MappingResultType = MappingResultType.Unknown;
+            if (Movie != null) this.MappingResultType = MappingResultType.Success;
+        }
+        
         public string Message
         {
             get
@@ -518,5 +539,14 @@ namespace NzbDrone.Core.Parser
         WrongTitle = 3,
         TitleNotFound = 4,
         NotParsable = 5,
+    }
+    
+    public static class MappingResultExtensions
+    {
+        public static bool IsSuccess(this MappingResult result)
+        {
+            return result.MappingResultType == MappingResultType.Success ||
+                   result.MappingResultType == MappingResultType.SuccessLenientMapping;
+        }
     }
 }

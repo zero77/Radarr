@@ -101,14 +101,15 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
         {
             DownloadClientItem downloadClientItem = null;
             var directoryInfo = new DirectoryInfo(folder);
-            var movie = _parsingService.GetMovie(directoryInfo.Name);
+            var result = _parsingService.GetMovie(directoryInfo.Name);
+            Movie movie = result.Movie;
 
             if (downloadId.IsNotNullOrWhiteSpace())
             {
                 var trackedDownload = _trackedDownloadService.Find(downloadId);
                 downloadClientItem = trackedDownload.DownloadItem;
 
-                if (movie == null)
+                if (!result.IsSuccess())
                 {
                     movie = trackedDownload.RemoteMovie.Movie;
                 }
@@ -140,25 +141,27 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
             DownloadClientItem downloadClientItem = null;
             var relativeFile = folder.GetRelativePath(file);
 
-            var movie = _parsingService.GetMovie(relativeFile.Split('\\', '/')[0]);
+            var result = _parsingService.GetMovie(relativeFile.Split('\\', '/')[0]);
 
-            if (movie == null)
+            if (!result.IsSuccess())
             {
-                movie = _parsingService.GetMovie(relativeFile);
+                result = _parsingService.GetMovie(relativeFile);
             }
+
+            var movie = result.Movie;
 
             if (downloadId.IsNotNullOrWhiteSpace())
             {
                 var trackedDownload = _trackedDownloadService.Find(downloadId);
                 downloadClientItem = trackedDownload.DownloadItem;
 
-                if (movie == null)
+                if (!result.IsSuccess())
                 {
                     movie = trackedDownload.RemoteMovie.Movie;
                 }
             }
 
-            if (movie == null)
+            if (!result.IsSuccess())
             {
                 var localMovie = new LocalMovie()
                 {
@@ -167,7 +170,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Manual
                     Size = _diskProvider.GetFileSize(file)
                 };
 
-                return MapItem(new ImportDecision(localMovie, new Rejection("Unknown Movie")), folder, downloadId);
+                return MapItem(new ImportDecision(localMovie, result.ToRejection()), folder, downloadId);
             }
 
             var importDecisions = _importDecisionMaker.GetImportDecisions(new List<string> { file },

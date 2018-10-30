@@ -72,7 +72,7 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
 
             Mocker.GetMock<IParsingService>()
 			      .Setup(s => s.GetMovie(It.IsAny<string>()))
-                  .Returns(_movie);
+                  .Returns(new MappingResult(_movie));
 
             Mocker.GetMock<IPrioritizeDownloadDecision>()
                   .Setup(s => s.PrioritizeDecisionsForMovies(It.IsAny<List<DownloadDecision>>()))

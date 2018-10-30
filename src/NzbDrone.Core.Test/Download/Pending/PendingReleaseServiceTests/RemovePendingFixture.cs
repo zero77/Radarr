@@ -40,7 +40,7 @@ namespace NzbDrone.Core.Test.Download.Pending.PendingReleaseServiceTests
 
             Mocker.GetMock<IParsingService>()
                   .Setup(s => s.GetMovie(It.IsAny<string>()))
-                  .Returns(_movie);
+                  .Returns(new MappingResult(_movie));
         }
 
         private void AddPending(int id, string title, int year)

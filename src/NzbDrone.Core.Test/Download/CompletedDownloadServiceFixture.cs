@@ -57,7 +57,7 @@ namespace NzbDrone.Core.Test.Download
 
             Mocker.GetMock<IParsingService>()
                   .Setup(s => s.GetMovie("Drone.1998"))
-                  .Returns(remoteEpisode.Movie);
+                  .Returns(new MappingResult(remoteEpisode.Movie));
 
         }
 
@@ -98,18 +98,18 @@ namespace NzbDrone.Core.Test.Download
 
             Mocker.GetMock<IParsingService>()
                .Setup(s => s.GetMovie(It.IsAny<string>()))
-               .Returns((Movie)null);
+               .Returns(new MappingResult((Movie)null));
 
             Mocker.GetMock<IParsingService>()
                 .Setup(s => s.GetMovie("Droned 1998"))
-                .Returns(BuildRemoteMovie().Movie);
+                .Returns(new MappingResult(BuildRemoteMovie().Movie));
         }
 
         private void GivenSeriesMatch()
         {
             Mocker.GetMock<IParsingService>()
                   .Setup(s => s.GetMovie(It.IsAny<string>()))
-                  .Returns(_trackedDownload.RemoteMovie.Movie);
+                  .Returns(new MappingResult(_trackedDownload.RemoteMovie.Movie));
         }
 
         [TestCase(DownloadItemStatus.Downloading)]
@@ -323,7 +323,7 @@ namespace NzbDrone.Core.Test.Download
         {
             Mocker.GetMock<IParsingService>()
                   .Setup(s => s.GetMovie("Drone.1998"))
-                  .Returns((Movie)null);
+                  .Returns(new MappingResult((Movie)null));
 
             Subject.Process(_trackedDownload);
 

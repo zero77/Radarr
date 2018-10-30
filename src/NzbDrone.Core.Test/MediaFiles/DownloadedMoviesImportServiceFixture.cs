@@ -51,7 +51,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         {
             Mocker.GetMock<IParsingService>()
                   .Setup(s => s.GetMovie(It.IsAny<string>()))
-                  .Returns(Builder<Movie>.CreateNew().Build());
+                  .Returns(new MappingResult(Builder<Movie>.CreateNew().Build()));
         }
 
         [Test]
@@ -78,7 +78,7 @@ namespace NzbDrone.Core.Test.MediaFiles
         [Test]
         public void should_skip_if_no_series_found()
         {
-            Mocker.GetMock<IParsingService>().Setup(c => c.GetMovie("foldername")).Returns((Movie)null);
+            Mocker.GetMock<IParsingService>().Setup(c => c.GetMovie("foldername")).Returns(new MappingResult((Movie)null));
 
             Subject.ProcessRootFolder(new DirectoryInfo(_droneFactory));
 

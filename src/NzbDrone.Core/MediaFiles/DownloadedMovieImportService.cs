@@ -145,19 +145,19 @@ namespace NzbDrone.Core.MediaFiles
         private List<ImportResult> ProcessFolder(DirectoryInfo directoryInfo, ImportMode importMode, DownloadClientItem downloadClientItem)
         {
             var cleanedUpName = GetCleanedUpFolderName(directoryInfo.Name);
-            var movie = _parsingService.GetMovie(cleanedUpName);
+            var result = _parsingService.GetMovie(cleanedUpName);
 
-            if (movie == null)
+            if (result?.IsSuccess() == false)
             {
-                _logger.Debug("Unknown Movie {0}", cleanedUpName);
+                _logger.Debug("Unknown Movie {0}: {1}", cleanedUpName, result?.Message);
 
                 return new List<ImportResult>
                        {
-                           UnknownMovieResult("Unknown Movie")
+                           UnknownMovieResult(result.Message)
                        };
             }
 
-            return ProcessFolder(directoryInfo, importMode, movie, downloadClientItem);
+            return ProcessFolder(directoryInfo, importMode, result.Movie, downloadClientItem);
         }
 
         private List<ImportResult> ProcessFolder(DirectoryInfo directoryInfo, ImportMode importMode, Movie movie, DownloadClientItem downloadClientItem)
@@ -210,19 +210,19 @@ namespace NzbDrone.Core.MediaFiles
 
         private List<ImportResult> ProcessFile(FileInfo fileInfo, ImportMode importMode, DownloadClientItem downloadClientItem)
         {
-            var movie = _parsingService.GetMovie(Path.GetFileNameWithoutExtension(fileInfo.Name));
+            var result = _parsingService.GetMovie(Path.GetFileNameWithoutExtension(fileInfo.Name));
 
-            if (movie == null)
+            if (!result.IsSuccess())
             {
-                _logger.Debug("Unknown Movie for file: {0}", fileInfo.Name);
+                _logger.Debug("Unknown Movie for file: {0}, {1}", fileInfo.Name, result.Message);
 
                 return new List<ImportResult>
                        {
-                           UnknownMovieResult(string.Format("Unknown Movie for file: {0}", fileInfo.Name), fileInfo.FullName)
+                           UnknownMovieResult(string.Format("Unknown Movie for file: {0}, {1}", fileInfo.Name, result.Message), fileInfo.FullName)
                        };
             }
 
-            return ProcessFile(fileInfo, importMode, movie, downloadClientItem);
+            return ProcessFile(fileInfo, importMode, result.Movie, downloadClientItem);
         }
 
         private List<ImportResult> ProcessFile(FileInfo fileInfo, ImportMode importMode, Movie movie, DownloadClientItem downloadClientItem)

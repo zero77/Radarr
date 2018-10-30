@@ -88,9 +88,10 @@ namespace NzbDrone.Core.Download
                     return;
                 }
 
-                var movie = _parsingService.GetMovie(trackedDownload.DownloadItem.Title);
-                if (movie == null)
+                var result = _parsingService.GetMovie(trackedDownload.DownloadItem.Title);
+                if (!result.IsSuccess())
                 {
+                    Movie movie = null;
                     if (historyItem != null)
                     {
                         movie = _movieService.GetMovie(historyItem.MovieId);
@@ -98,7 +99,7 @@ namespace NzbDrone.Core.Download
 
                     if (movie == null)
                     {
-                        trackedDownload.Warn("Movie title mismatch, automatic import is not possible.");
+                        trackedDownload.Warn("Automatic import is not possible, due to Movie title mismatch: "+result.Message);
                         return;
                     }
                 }
