@@ -63,6 +63,8 @@ namespace Marr.Data
             ProviderFactory = dbProviderFactory;
 
             ConnectionString = connectionString;
+            
+            Console.WriteLine("Creating DataMapper");
         }
 
         public string ConnectionString { get; private set; }
@@ -943,6 +945,8 @@ namespace Marr.Data
             {
                 if (_command != null)
                 {
+                    Console.WriteLine($"Disposing of DataMapper. {_command} {_command.CommandText} {_command.CommandType} {_command.Connection?.State} {_command.Connection?.Database} {_command.Connection?.ConnectionString}");
+                    
                     if (_command.Transaction != null)
                     {
                         _command.Transaction.Dispose();
@@ -957,6 +961,10 @@ namespace Marr.Data
 
                     _command.Dispose();
                     _command = null;
+                }
+                else
+                {
+                    Console.WriteLine("Command null, previously freed?");
                 }
             }
         }
