@@ -72,25 +72,30 @@ namespace NzbDrone.Core.Movies
 
         public Movie FindByTitleSlug(string slug)
         {
-            return Query(q => q.FirstOrDefault(m => m.TitleSlug == slug));
+            return Query(q => q.Where(m => m.TitleSlug == slug).FirstOrDefault());
         }
 
         public List<Movie> MoviesBetweenDates(DateTime start, DateTime end, bool includeUnmonitored)
         {
-            var query = Query(q => q.Where(m => (m.InCinemas >= start && m.InCinemas <= end) || (m.PhysicalRelease >= start && m.PhysicalRelease <= end)));
-
-            if (!includeUnmonitored)
+            return Query(q =>
             {
-                query.AndWhere(e => e.Monitored == true);
-            }
+                var query = q.Where(m =>
+                        (m.InCinemas >= start && m.InCinemas <= end) ||
+                        (m.PhysicalRelease >= start && m.PhysicalRelease <= end));
+                
+                if (!includeUnmonitored)
+                {
+                    query.AndWhere(e => e.Monitored == true);
+                }
 
-            return query.ToList();
+                return query.ToList();
+            });
         }
 
         public List<Movie> MoviesWithFiles(int movieId)
         {
             return Query(q => q.Join<Movie, MovieFile>(JoinType.Inner, m => m.MovieFile, (m, mf) => m.MovieFileId == mf.Id)
-                        .Where(m => m.Id == movieId));
+                        .Where(m => m.Id == movieId).ToList());
         }
 
         public PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec)

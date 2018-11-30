@@ -30,7 +30,7 @@ namespace NzbDrone.Core.History
 
         public List<QualityModel> GetBestQualityInHistory(int movieId)
         {
-            var history = Query(q => q.Where(c => c.MovieId == movieId));
+            var history = Query(q => q.Where(c => c.MovieId == movieId).ToList());
 
             return history.Select(h => h.Quality).ToList();
         }
@@ -44,7 +44,7 @@ namespace NzbDrone.Core.History
 
         public List<History> FindByDownloadId(string downloadId)
         {
-            return Query(q => q.Where(h => h.DownloadId == downloadId));
+            return Query(q => q.Where(h => h.DownloadId == downloadId).ToList());
         }
 
         public List<History> FindDownloadHistory(int idMovieId, QualityModel quality)
@@ -60,7 +60,7 @@ namespace NzbDrone.Core.History
 
         public List<History> FindByMovieId(int movieId)
         {
-            return Query(q => q.Where(h => h.MovieId == movieId));
+            return Query(q => q.Where(h => h.MovieId == movieId).ToList());
         }
 
         public void DeleteForMovie(int movieId)

@@ -34,12 +34,12 @@ namespace NzbDrone.Core.Extras.Files
 
         public List<TExtraFile> GetFilesByMovie(int movieId)
         {
-            return Query(q => q.Where(c => c.MovieId == movieId));
+            return Query(q => q.Where(c => c.MovieId == movieId).ToList());
         }
 
         public List<TExtraFile> GetFilesByMovieFile(int movieFileId)
         {
-            return Query(q => q.Where(c => c.MovieFileId == movieFileId));
+            return Query(q => q.Where(c => c.MovieFileId == movieFileId).ToList());
         }
 
         public TExtraFile FindByPath(string path)
