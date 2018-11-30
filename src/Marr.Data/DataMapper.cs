@@ -938,6 +938,7 @@ namespace Marr.Data
         {
             Dispose(true);
             GC.SuppressFinalize(this); // In case a derived class implements a finalizer
+            GC.Collect();
         }
 
         protected virtual void Dispose(bool disposing)
