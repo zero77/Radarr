@@ -42,7 +42,10 @@ namespace NzbDrone.Core.Datastore
         private readonly IDatabase _database;
         private readonly IEventAggregator _eventAggregator;
 
-        protected IDataMapper DataMapper => _database.GetDataMapper();
+        protected IDataMapper DataMapper()
+        {
+            return _database.GetDataMapper();
+        }
 
         public BasicRepository(IDatabase database, IEventAggregator eventAggregator)
         {
@@ -53,7 +56,7 @@ namespace NzbDrone.Core.Datastore
 
         protected T Query<T>(Func<QueryBuilder<TModel>, T> finalizeQuery)
         {
-            using (var mapper = DataMapper)
+            using (var mapper = DataMapper())
             {
                 var query = AddJoinQueries(mapper.Query<TModel>());
                 return finalizeQuery(query);
@@ -62,7 +65,7 @@ namespace NzbDrone.Core.Datastore
 
         protected void Delete(Expression<Func<TModel, bool>> filter)
         {
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Delete(filter);
             }
@@ -75,7 +78,7 @@ namespace NzbDrone.Core.Datastore
 
         public int Count()
         {
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 return db.Query<TModel>().GetRowCount();
             }
@@ -125,7 +128,7 @@ namespace NzbDrone.Core.Datastore
                 throw new InvalidOperationException("Can't insert model with existing ID " + model.Id);
             }
 
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Insert(model);
             }
@@ -142,7 +145,7 @@ namespace NzbDrone.Core.Datastore
                 throw new InvalidOperationException("Can't update model with ID 0");
             }
 
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Update(model, c => c.Id == model.Id);
             }
@@ -159,7 +162,7 @@ namespace NzbDrone.Core.Datastore
 
         public void InsertMany(IList<TModel> models)
         {
-            using (var unitOfWork = new UnitOfWork(() => DataMapper))
+            using (var unitOfWork = new UnitOfWork(() => DataMapper()))
             {
                 unitOfWork.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -174,7 +177,7 @@ namespace NzbDrone.Core.Datastore
 
         public void UpdateMany(IList<TModel> models)
         {
-            using (var unitOfWork = new UnitOfWork(() => DataMapper))
+            using (var unitOfWork = new UnitOfWork(() => DataMapper()))
             {
                 unitOfWork.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -212,7 +215,7 @@ namespace NzbDrone.Core.Datastore
 
         public void Delete(int id)
         {
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Delete<TModel>(c => c.Id == id);
             }
@@ -220,7 +223,7 @@ namespace NzbDrone.Core.Datastore
 
         public void DeleteMany(IEnumerable<int> ids)
         {
-            using (var unitOfWork = new UnitOfWork(() => DataMapper))
+            using (var unitOfWork = new UnitOfWork(() => DataMapper()))
             {
                 unitOfWork.BeginTransaction(IsolationLevel.ReadCommitted);
 
@@ -237,7 +240,7 @@ namespace NzbDrone.Core.Datastore
 
         public void Purge(bool vacuum = false)
         {
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Delete<TModel>(c => c.Id > -1);
             }
@@ -264,7 +267,7 @@ namespace NzbDrone.Core.Datastore
                 throw new InvalidOperationException("Attempted to updated model without ID");
             }
 
-            using (var db = DataMapper)
+            using (var db = DataMapper())
             {
                 db.Update<TModel>()
                     .Where(c => c.Id == model.Id)
