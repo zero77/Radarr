@@ -132,9 +132,9 @@ namespace NzbDrone.Common.Disk
 
             try
             {
-                using (var bmp = new Bitmap(filename))
+                /*using (var bmp = new Bitmap(filename))
                 {
-                }
+                }*/
                 return true;
             }
             catch (Exception ex)
