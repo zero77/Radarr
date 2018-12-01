@@ -132,7 +132,7 @@ namespace NzbDrone.Common.Disk
 
             try
             {
-                var bmp = new Bitmap(filename, false);
+                var bmp = new Bitmap(filename, true);
                 bmp.Dispose();
                 return true;
             }
