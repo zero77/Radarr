@@ -125,7 +125,7 @@ namespace NzbDrone.Core.MediaCover
                     _logger.Error(e, "Couldn't download media cover for " + movie);
                 }
 
-                EnsureResizedCovers(movie, cover, !alreadyExists);
+                //EnsureResizedCovers(movie, cover, !alreadyExists);
             }
         }
 
@@ -184,13 +184,13 @@ namespace NzbDrone.Core.MediaCover
 
         public void HandleAsync(MovieUpdatedEvent message)
         {
-            //EnsureCovers(message.Movie);
+            EnsureCovers(message.Movie);
             _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
         }
 
         public void HandleAsync(MovieAddedEvent message)
         {
-            //EnsureCovers(message.Movie);
+            EnsureCovers(message.Movie);
             _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
         }
 
