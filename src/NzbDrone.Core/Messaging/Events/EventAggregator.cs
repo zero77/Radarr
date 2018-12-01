@@ -23,7 +23,6 @@ namespace NzbDrone.Core.Messaging.Events
 
         public void PublishEvent<TEvent>(TEvent @event) where TEvent : class ,IEvent
         {
-            return;
             Ensure.That(@event, () => @event).IsNotNull();
 
             var eventName = GetEventName(@event.GetType());
