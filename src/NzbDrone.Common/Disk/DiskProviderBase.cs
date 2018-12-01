@@ -111,6 +111,7 @@ namespace NzbDrone.Common.Disk
 
         public bool CanUseGDIPlus()
         {
+            return false;
             try
             {
                 GdiPlusInterop.CheckGdiPlus();
