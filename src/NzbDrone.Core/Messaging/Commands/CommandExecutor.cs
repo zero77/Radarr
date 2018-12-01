@@ -40,7 +40,9 @@ namespace NzbDrone.Core.Messaging.Commands
                 {
                     try
                     {
+                        Thread.Sleep(2000);
                         ExecuteCommand((dynamic) command.Body, command);
+                        Thread.Sleep(2000);
                     }
                     catch (Exception ex)
                     {
