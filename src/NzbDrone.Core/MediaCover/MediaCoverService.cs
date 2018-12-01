@@ -89,10 +89,10 @@ namespace NzbDrone.Core.MediaCover
             foreach (var cover in movie.Images)
             {
                 var fileName = GetCoverPath(movie.Id, cover.CoverType);
-                var alreadyExists = false;
+                var alreadyExists = true;
                 try
                 {
-                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.Url, fileName);
+                    //alreadyExists = _coverExistsSpecification.AlreadyExists(cover.Url, fileName);
                     if (!alreadyExists)
                     {
                         DownloadCover(movie, cover);
