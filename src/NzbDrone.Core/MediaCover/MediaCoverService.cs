@@ -92,7 +92,7 @@ namespace NzbDrone.Core.MediaCover
                 var alreadyExists = true;
                 try
                 {
-                    //alreadyExists = _coverExistsSpecification.AlreadyExists(cover.Url, fileName);
+                    alreadyExists = _coverExistsSpecification.AlreadyExists(cover.Url, fileName);
                     if (!alreadyExists)
                     {
                         DownloadCover(movie, cover);
