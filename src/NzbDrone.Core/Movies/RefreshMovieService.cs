@@ -199,8 +199,8 @@ namespace NzbDrone.Core.Movies
                         try
                         {
                             _logger.Info("Skipping refresh of movie: {0}", movie.Title);
-                            //_commandQueueManager.Push(new RenameMovieFolderCommand(new List<int> { movie.Id }));
-                            //_diskScanService.Scan(movie);
+                            _commandQueueManager.Push(new RenameMovieFolderCommand(new List<int> { movie.Id }));
+                            _diskScanService.Scan(movie);
                         }
                         catch (Exception e)
                         {
