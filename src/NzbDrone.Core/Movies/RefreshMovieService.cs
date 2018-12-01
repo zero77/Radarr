@@ -164,7 +164,7 @@ namespace NzbDrone.Core.Movies
             }
 
             _logger.Debug("Finished movie refresh for {0}", movie.Title);
-            //_eventAggregator.PublishEvent(new MovieUpdatedEvent(movie));
+            _eventAggregator.PublishEvent(new MovieUpdatedEvent(movie));
         }
 
         public void Execute(RefreshMovieCommand message)
