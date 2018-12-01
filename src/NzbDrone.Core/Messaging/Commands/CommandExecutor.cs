@@ -18,8 +18,8 @@ namespace NzbDrone.Core.Messaging.Commands
 
         private static CancellationTokenSource _cancellationTokenSource;
         private const int THREAD_UPPER_BOUND = 10;
-        private const int THREAD_LOWER_BOUND = 2;
-        private const int THREAD_LIMIT = 2;
+        private const int THREAD_LOWER_BOUND = 1;
+        private const int THREAD_LIMIT = 1;
 
         public CommandExecutor(IServiceFactory serviceFactory,
                                IManageCommandQueue commandQueueManager,
@@ -40,9 +40,7 @@ namespace NzbDrone.Core.Messaging.Commands
                 {
                     try
                     {
-                        Thread.Sleep(2000);
                         ExecuteCommand((dynamic) command.Body, command);
-                        Thread.Sleep(2000);
                     }
                     catch (Exception ex)
                     {
