@@ -105,6 +105,7 @@ _TeamCity*
 Backups/
 logs/
 MediaCover/
+!src/NzbDrone.Core/MediaCover/
 UpdateLogs/
 xdg/
 config.xml
