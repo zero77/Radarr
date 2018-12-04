@@ -7,5 +7,7 @@ namespace NzbDrone.Core.MediaCover
         public int MovieId { get; set; }
         
         public string ImagePath { get; set; }
+        
+        public bool Force { get; set; }
     }
 }

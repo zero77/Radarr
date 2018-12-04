@@ -35,6 +35,8 @@ namespace NzbDrone.Core.MediaCover
         private readonly ICoverExistsSpecification _coverExistsSpecification;
         private readonly IConfigFileProvider _configFileProvider;
         private readonly IEventAggregator _eventAggregator;
+        private readonly IMovieService _movieService;
+        private readonly IManageCommandQueue _commandQueue;
         private readonly Logger _logger;
 
         private readonly string _coverRootFolder;
@@ -46,6 +48,8 @@ namespace NzbDrone.Core.MediaCover
                                  ICoverExistsSpecification coverExistsSpecification,
                                  IConfigFileProvider configFileProvider,
                                  IEventAggregator eventAggregator,
+                                 IMovieService movieService,
+                                 IManageCommandQueue commandQueue,
                                  Logger logger)
         {
             _resizer = resizer;
@@ -54,6 +58,8 @@ namespace NzbDrone.Core.MediaCover
             _coverExistsSpecification = coverExistsSpecification;
             _configFileProvider = configFileProvider;
             _eventAggregator = eventAggregator;
+            _movieService = movieService;
+            _commandQueue = commandQueue;
             _logger = logger;
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
@@ -127,10 +133,8 @@ namespace NzbDrone.Core.MediaCover
                 {
                     _logger.Error(e, "Couldn't download media cover for " + movie);
                 }
-                
-                System.Threading.Thread.Sleep(10000);
-                
-                EnsureResizedCovers(movie, cover, !alreadyExists);
+
+                _commandQueue.Push(new ResizeTestCommand {MovieId = movie.Id, Force = !alreadyExists});
             }
         }
 
@@ -210,7 +214,15 @@ namespace NzbDrone.Core.MediaCover
 
         public void Execute(ResizeTestCommand message)
         {
-            int[] heights = {500, 250};
+            Movie movie = _movieService.GetMovie(message.MovieId);
+            if (movie != null)
+            {
+                foreach (var cover in movie.Images)
+                {
+                    EnsureResizedCovers(movie, cover, message.Force);
+                }
+            }
+            /*int[] heights = {500, 250};
             foreach (var height in heights)
             {
                 var mainFileName = message.ImagePath;
@@ -235,7 +247,7 @@ namespace NzbDrone.Core.MediaCover
                 {
                     _logger.Error(ex, "Couldn't resize media cover {0}-{1}, using full size image instead.", MediaCoverTypes.Poster, height);
                 }
-            }
+            }*/
         }
     }
 }
