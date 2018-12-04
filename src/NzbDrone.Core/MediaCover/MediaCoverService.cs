@@ -194,13 +194,13 @@ namespace NzbDrone.Core.MediaCover
         public void Handle(MovieUpdatedEvent message)
         {
             EnsureCovers(message.Movie);
-            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
+            //_eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
         }
 
         public void Handle(MovieAddedEvent message)
         {
             EnsureCovers(message.Movie);
-            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
+            //_eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
         }
 
         public void HandleAsync(MovieDeletedEvent message)
@@ -214,6 +214,7 @@ namespace NzbDrone.Core.MediaCover
 
         public void Execute(ResizeTestCommand message)
         {
+            _logger.Info("Resizing media covers...");
             Movie movie = _movieService.GetMovie(message.MovieId);
             if (movie != null)
             {
