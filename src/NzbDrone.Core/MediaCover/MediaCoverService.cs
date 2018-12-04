@@ -177,7 +177,7 @@ namespace NzbDrone.Core.MediaCover
 
                 if (forceResize || !_diskProvider.FileExists(resizeFileName) || _diskProvider.GetFileSize(resizeFileName) == 0)
                 {
-                    _logger.Debug("Resizing {0}-{1} for {2}", cover.CoverType, height, movie);
+                    _logger.Info("Resizing {0}-{1} for {2}", cover.CoverType, height, movie);
 
                     try
                     {
@@ -215,7 +215,7 @@ namespace NzbDrone.Core.MediaCover
         public void Execute(ResizeTestCommand message)
         {
             _logger.Info("Resizing media covers...");
-            System.Threading.Thread.Sleep(8000);
+            //System.Threading.Thread.Sleep(8000);
             Movie movie = _movieService.GetMovie(message.MovieId);
             if (movie != null)
             {
@@ -224,6 +224,9 @@ namespace NzbDrone.Core.MediaCover
                     EnsureResizedCovers(movie, cover, message.Force);
                 }
             }
+            
+            _eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(movie));
+
             /*int[] heights = {500, 250};
             foreach (var height in heights)
             {
