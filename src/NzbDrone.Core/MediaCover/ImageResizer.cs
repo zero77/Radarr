@@ -29,14 +29,14 @@ namespace NzbDrone.Core.MediaCover
                     throw new Exception("Can't resize without libgdiplus.");
                 }
 
-                using (var sourceStream = _diskProvider.OpenReadStream(source))
+                //using (var sourceStream = _diskProvider.OpenReadStream(source))
                 {
-                    using (var outputStream = _diskProvider.OpenWriteStream(destination))
+                    //using (var outputStream = _diskProvider.OpenWriteStream(destination))
                     {
                         var settings = new Instructions();
                         settings.Height = height;
                         
-                        var job = new ImageJob(sourceStream, outputStream, settings);
+                        var job = new ImageJob(source, destination, settings);
                         
                         ImageBuilder.Current.Build(job);
                     }
