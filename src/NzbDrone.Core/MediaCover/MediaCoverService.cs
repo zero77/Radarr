@@ -7,7 +7,9 @@ using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Common.Http;
+using NzbDrone.Common.Instrumentation.Extensions;
 using NzbDrone.Core.Configuration;
+using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Messaging.Events;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.Events;
@@ -24,6 +26,7 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<MovieUpdatedEvent>,
         IHandleAsync<MovieAddedEvent>,
         IHandleAsync<MovieDeletedEvent>,
+        IExecute<ResizeTestCommand>,
         IMapCoversToLocal
     {
         private readonly IImageResizer _resizer;
@@ -125,7 +128,7 @@ namespace NzbDrone.Core.MediaCover
                     _logger.Error(e, "Couldn't download media cover for " + movie);
                 }
 
-                //EnsureResizedCovers(movie, cover, !alreadyExists);
+                EnsureResizedCovers(movie, cover, !alreadyExists);
             }
         }
 
@@ -200,6 +203,36 @@ namespace NzbDrone.Core.MediaCover
             if (_diskProvider.FolderExists(path))
             {
                 _diskProvider.DeleteFolder(path, true);
+            }
+        }
+
+        public void Execute(ResizeTestCommand message)
+        {
+            int[] heights = {500, 250};
+            foreach (var height in heights)
+            {
+                var mainFileName = message.ImagePath;
+                var heightName = message.ImagePath;
+                if (mainFileName.IsNullOrWhiteSpace())
+                {
+                    mainFileName = GetCoverPath(message.MovieId, MediaCoverTypes.Poster);
+                    heightName = GetCoverPath(message.MovieId, MediaCoverTypes.Poster, height);
+                }
+                else
+                {
+                    heightName = Path.ChangeExtension(heightName, null) + "-" + height + ".jpg";
+                }
+            
+                _logger.ProgressInfo("Resizing {0}-{1}", MediaCoverTypes.Poster, height);
+
+                try
+                {
+                    _resizer.Resize(mainFileName, heightName, height);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Couldn't resize media cover {0}-{1}, using full size image instead.", MediaCoverTypes.Poster, height);
+                }
             }
         }
     }

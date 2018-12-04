@@ -1,5 +1,7 @@
 ﻿using ImageResizer;
 using System;
+using System.Drawing.Imaging;
+using ImageResizer.Plugins.Basic;
 using NzbDrone.Common.Disk;
 
 namespace NzbDrone.Core.MediaCover
@@ -33,9 +35,9 @@ namespace NzbDrone.Core.MediaCover
                     {
                         var settings = new Instructions();
                         settings.Height = height;
-
+                        
                         var job = new ImageJob(sourceStream, outputStream, settings);
-
+                        
                         ImageBuilder.Current.Build(job);
                     }
                 }
