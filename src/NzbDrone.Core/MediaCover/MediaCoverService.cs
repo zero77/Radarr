@@ -127,8 +127,10 @@ namespace NzbDrone.Core.MediaCover
                 {
                     _logger.Error(e, "Couldn't download media cover for " + movie);
                 }
-
-                //EnsureResizedCovers(movie, cover, !alreadyExists);
+                
+                System.Threading.Thread.Sleep(10000);
+                
+                EnsureResizedCovers(movie, cover, !alreadyExists);
             }
         }
 
