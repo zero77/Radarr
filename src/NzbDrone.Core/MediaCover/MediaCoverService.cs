@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using NLog;
+using NzbDrone.Common.Cache;
 using NzbDrone.Common.Disk;
 using NzbDrone.Common.EnvironmentInfo;
 using NzbDrone.Common.Extensions;
@@ -25,6 +26,7 @@ namespace NzbDrone.Core.MediaCover
         IHandleAsync<MovieUpdatedEvent>,
         IHandleAsync<MovieAddedEvent>,
         IHandleAsync<MovieDeletedEvent>,
+        IHandleAsync<MediaCoversUpdatedEvent>,
         IExecute<EnsureMediaCoversCommand>,
         IMapCoversToLocal
     {
@@ -36,6 +38,7 @@ namespace NzbDrone.Core.MediaCover
         private readonly IEventAggregator _eventAggregator;
         private readonly IManageCommandQueue _commandQueue;
         private readonly IMovieService _movieService;
+        private readonly ICached<bool> _ensureCovers;
         private readonly Logger _logger;
 
         private readonly string _coverRootFolder;
@@ -49,6 +52,7 @@ namespace NzbDrone.Core.MediaCover
                                  IEventAggregator eventAggregator,
                                  IManageCommandQueue commandQueue,
                                  IMovieService movieService,
+                                 ICacheManager cacheManager,
                                  Logger logger)
         {
             _resizer = resizer;
@@ -59,6 +63,7 @@ namespace NzbDrone.Core.MediaCover
             _eventAggregator = eventAggregator;
             _commandQueue = commandQueue;
             _movieService = movieService;
+            _ensureCovers = cacheManager.GetCache<bool>(GetType());
             _logger = logger;
 
             _coverRootFolder = appFolderInfo.GetMediaCoverPath();
@@ -75,7 +80,7 @@ namespace NzbDrone.Core.MediaCover
         {
             foreach (var mediaCover in covers)
             {
-                var filePath = GetCoverPath(movieId, mediaCover.CoverType);
+                //var filePath = GetCoverPath(movieId, mediaCover.CoverType);
 
                 mediaCover.Url = _configFileProvider.UrlBase + @"/MediaCover/" + movieId + "/" + mediaCover.CoverType.ToString().ToLower() + ".jpg";
 
@@ -190,6 +195,16 @@ namespace NzbDrone.Core.MediaCover
             }
         }
 
+        public void HandleAsync(MediaCoversUpdatedEvent message)
+        {
+            if (_ensureCovers.Find(message.Movie.Id.ToString()))
+            {
+                _ensureCovers.Remove(message.Movie.Id.ToString());
+                _logger.Debug("Reensuring Media Covers after they were updated, in case an update had new media covers.");
+                _commandQueue.Push(new EnsureMediaCoversCommand(message.Movie.Id));
+            }
+        }
+
         public void Execute(EnsureMediaCoversCommand command)
         {
             var movie = _movieService.GetMovie(command.MovieId);
@@ -200,8 +215,11 @@ namespace NzbDrone.Core.MediaCover
         public void HandleAsync(MovieUpdatedEvent message)
         {
             //EnsureCovers(message.Movie);
-            _logger.Info("Testing: {0}, {1}", _commandQueue, message.Movie.Id);
-            _commandQueue.Push(new EnsureMediaCoversCommand(message.Movie.Id));
+            var result = _commandQueue.Push(new EnsureMediaCoversCommand(message.Movie.Id, true));
+            if ((result.Body as EnsureMediaCoversCommand)?.IsFromUpdate == false)
+            {
+                _ensureCovers.Set(message.Movie.Id.ToString(), true);
+            }
             //_eventAggregator.PublishEvent(new MediaCoversUpdatedEvent(message.Movie));
         }
 

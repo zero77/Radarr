@@ -6,14 +6,17 @@ namespace NzbDrone.Core.MediaCover
     {
         public int MovieId { get; set; }
 
+        public bool IsFromUpdate { get; set; }
+
         public EnsureMediaCoversCommand()
         {
             
         }
 
-        public EnsureMediaCoversCommand(int movieId)
+        public EnsureMediaCoversCommand(int movieId, bool isFromUpdate = false)
         {
             MovieId = movieId;
+            IsFromUpdate = isFromUpdate;
         }
     }
 }
