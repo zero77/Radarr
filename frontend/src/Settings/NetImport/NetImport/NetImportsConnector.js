@@ -2,8 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { fetchNetImports, deleteNetImport } from 'Store/Actions/settingsActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchNetImports, deleteNetImport, fetchRootFolders } from 'Store/Actions/settingsActions';
 import NetImports from './NetImports';
 
 function createMapStateToProps() {

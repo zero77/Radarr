@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { setImportMovieValue, importMovie, clearImportMovie } from 'Store/Actions/importMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders } from 'Store/Actions/settingsActions';
 import { setAddMovieDefault } from 'Store/Actions/addMovieActions';
 import createRouteMatchShape from 'Helpers/Props/Shapes/createRouteMatchShape';
 import ImportMovie from './ImportMovie';
@@ -12,7 +12,7 @@ import ImportMovie from './ImportMovie';
 function createMapStateToProps() {
   return createSelector(
     (state, { match }) => match,
-    (state) => state.rootFolders,
+    (state) => state.settings.rootFolders,
     (state) => state.addMovie,
     (state) => state.importMovie,
     (state) => state.settings.qualityProfiles,

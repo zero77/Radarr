@@ -21,6 +21,7 @@ import qualityDefinitions from './Settings/qualityDefinitions';
 import qualityProfiles from './Settings/qualityProfiles';
 import remotePathMappings from './Settings/remotePathMappings';
 import restrictions from './Settings/restrictions';
+import rootFolders from './Settings/rootFolders';
 import ui from './Settings/ui';
 
 export * from './Settings/customFormats';
@@ -43,6 +44,7 @@ export * from './Settings/qualityDefinitions';
 export * from './Settings/qualityProfiles';
 export * from './Settings/remotePathMappings';
 export * from './Settings/restrictions';
+export * from './Settings/rootFolders';
 export * from './Settings/ui';
 
 //
@@ -76,6 +78,7 @@ export const defaultState = {
   qualityProfiles: qualityProfiles.defaultState,
   remotePathMappings: remotePathMappings.defaultState,
   restrictions: restrictions.defaultState,
+  rootFolders: rootFolders.defaultState,
   ui: ui.defaultState
 };
 
@@ -117,6 +120,7 @@ export const actionHandlers = handleThunks({
   ...qualityProfiles.actionHandlers,
   ...remotePathMappings.actionHandlers,
   ...restrictions.actionHandlers,
+  ...rootFolders.actionHandlers,
   ...ui.actionHandlers
 });
 
@@ -149,6 +153,7 @@ export const reducers = createHandleActions({
   ...qualityProfiles.reducers,
   ...remotePathMappings.reducers,
   ...restrictions.reducers,
+  ...rootFolders.reducers,
   ...ui.reducers
 
 }, defaultState, section);

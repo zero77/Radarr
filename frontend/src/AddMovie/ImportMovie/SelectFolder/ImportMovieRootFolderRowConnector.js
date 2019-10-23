@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { deleteRootFolder } from 'Store/Actions/rootFolderActions';
+import { deleteRootFolder } from 'Store/Actions/settingsActions';
 import ImportMovieRootFolderRow from './ImportMovieRootFolderRow';
 
 function createMapStateToProps() {

@@ -8,7 +8,7 @@ import getNewMovie from 'Utilities/Movie/getNewMovie';
 import { createThunk, handleThunks } from 'Store/thunks';
 import createHandleActions from './Creators/createHandleActions';
 import { set, removeItem, updateItem } from './baseActions';
-import { fetchRootFolders } from './rootFolderActions';
+import { fetchRootFolders } from './settingsActions';
 
 //
 // Variables

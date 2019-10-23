@@ -2,14 +2,14 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { addRootFolder } from 'Store/Actions/rootFolderActions';
+// import { addRootFolder } from 'Store/Actions/rootFolderActions';
 import RootFolderSelectInput from './RootFolderSelectInput';
 
 const ADD_NEW_KEY = 'addNew';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.rootFolders,
+    (state) => state.settings.rootFolders,
     (state, { includeNoChange }) => includeNoChange,
     (rootFolders, includeNoChange) => {
       const values = rootFolders.items.map((rootFolder) => {
@@ -54,7 +54,7 @@ function createMapStateToProps() {
 function createMapDispatchToProps(dispatch, props) {
   return {
     dispatchAddRootFolder(path) {
-      dispatch(addRootFolder({ path }));
+      // dispatch(addRootFolder({ path }));
     }
   };
 }

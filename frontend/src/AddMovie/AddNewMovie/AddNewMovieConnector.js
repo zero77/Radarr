@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import parseUrl from 'Utilities/String/parseUrl';
 import { lookupMovie, clearAddMovie } from 'Store/Actions/addMovieActions';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders } from 'Store/Actions/settingsActions';
 import { fetchNetImportExclusions } from 'Store/Actions/Settings/netImportExclusions';
 import AddNewMovie from './AddNewMovie';
 

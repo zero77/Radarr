@@ -5,7 +5,7 @@ import { createSelector } from 'reselect';
 import dimensions from 'Styles/Variables/dimensions';
 import createAddMovieClientSideCollectionItemsSelector from 'Store/Selectors/createAddMovieClientSideCollectionItemsSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders } from 'Store/Actions/settingsActions';
 import { fetchDiscoverMovies, clearAddMovie, setListMovieSort, setListMovieFilter, setListMovieView, setListMovieTableOption } from 'Store/Actions/addMovieActions';
 import scrollPositions from 'Store/scrollPositions';
 import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';

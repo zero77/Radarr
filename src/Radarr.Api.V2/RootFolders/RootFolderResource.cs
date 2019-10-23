@@ -8,9 +8,12 @@ namespace Radarr.Api.V2.RootFolders
 {
     public class RootFolderResource : RestResource
     {
+        public string Name { get; set; }
         public string Path { get; set; }
         public bool Accessible { get; set; }
         public long? FreeSpace { get; set; }
+
+        public int QualityProfileId { get; set; }
 
         public List<UnmappedFolder> UnmappedFolders { get; set; }
     }
@@ -25,10 +28,12 @@ namespace Radarr.Api.V2.RootFolders
             {
                 Id = model.Id,
 
+                Name = model.Path.GetCleanPath(), //Set Bogus for Testing UI
                 Path = model.Path.GetCleanPath(),
                 Accessible = model.Accessible,
                 FreeSpace = model.FreeSpace,
-                UnmappedFolders = model.UnmappedFolders
+                UnmappedFolders = model.UnmappedFolders,
+                QualityProfileId = 1,
             };
         }
 

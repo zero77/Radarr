@@ -5,12 +5,13 @@ import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { push } from 'connected-react-router';
 import createSystemStatusSelector from 'Store/Selectors/createSystemStatusSelector';
-import { fetchRootFolders, addRootFolder, deleteRootFolder } from 'Store/Actions/rootFolderActions';
+// import { addRootFolder } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders, deleteRootFolder } from 'Store/Actions/settingsActions';
 import ImportMovieSelectFolder from './ImportMovieSelectFolder';
 
 function createMapStateToProps() {
   return createSelector(
-    (state) => state.rootFolders,
+    (state) => state.settings.rootFolders,
     createSystemStatusSelector(),
     (rootFolders, systemStatus) => {
       return {
@@ -23,7 +24,7 @@ function createMapStateToProps() {
 
 const mapDispatchToProps = {
   fetchRootFolders,
-  addRootFolder,
+  // addRootFolder,
   deleteRootFolder,
   push
 };
@@ -57,7 +58,7 @@ class ImportMovieSelectFolderConnector extends Component {
   // Listeners
 
   onNewRootFolderSelect = (path) => {
-    this.props.addRootFolder({ path });
+    // this.props.addRootFolder({ path });
   }
 
   onDeleteRootFolderPress = (id) => {
@@ -83,7 +84,7 @@ ImportMovieSelectFolderConnector.propTypes = {
   saveError: PropTypes.object,
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   fetchRootFolders: PropTypes.func.isRequired,
-  addRootFolder: PropTypes.func.isRequired,
+  // addRootFolder: PropTypes.func.isRequired,
   deleteRootFolder: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired
 };

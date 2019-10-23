@@ -6,7 +6,7 @@ import createMovieClientSideCollectionItemsSelector from 'Store/Selectors/create
 import dimensions from 'Styles/Variables/dimensions';
 import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import createDimensionsSelector from 'Store/Selectors/createDimensionsSelector';
-import { fetchRootFolders } from 'Store/Actions/rootFolderActions';
+import { fetchRootFolders } from 'Store/Actions/settingsActions';
 import scrollPositions from 'Store/scrollPositions';
 import { setMovieSort, setMovieFilter, setMovieView, setMovieTableOption, saveMovieEditor } from 'Store/Actions/movieIndexActions';
 import { executeCommand } from 'Store/Actions/commandActions';
