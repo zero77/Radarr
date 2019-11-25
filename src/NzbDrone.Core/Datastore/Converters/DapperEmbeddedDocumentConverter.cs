@@ -1,28 +1,29 @@
 ﻿using System.Data;
 using Dapper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Converters;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NzbDrone.Core.Datastore.Converters
 {
     public class DapperEmbeddedDocumentConverter<T> : SqlMapper.TypeHandler<T>
     {
-        private readonly JsonSerializerSettings SerializerSetting;
+        private readonly JsonSerializerOptions SerializerSetting;
 
         public DapperEmbeddedDocumentConverter()
         {
-            SerializerSetting = new JsonSerializerSettings
+            SerializerSetting = new JsonSerializerOptions
             {
-                DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-                NullValueHandling = NullValueHandling.Ignore,
-                Formatting = Formatting.Indented,
-                DefaultValueHandling = DefaultValueHandling.Include,
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                AllowTrailingCommas = true,
+                IgnoreNullValues = false,
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true,
+
+                // DateTimeZoneHandling = DateTimeZoneHandling.Utc,
             };
 
-            SerializerSetting.Converters.Add(new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() });
-            SerializerSetting.Converters.Add(new VersionConverter());
+            SerializerSetting.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
+            SerializerSetting.Converters.Add(new TimeSpanConverter());
         }
 
         public DapperEmbeddedDocumentConverter(params JsonConverter[] converters) : this()
@@ -35,12 +36,12 @@ namespace NzbDrone.Core.Datastore.Converters
 
         public override T Parse(object value)
         {
-            return JsonConvert.DeserializeObject<T>((string) value, SerializerSetting);
+            return JsonSerializer.Deserialize<T>((string) value, SerializerSetting);
         }
 
         public override void SetValue(IDbDataParameter parameter, T doc)
         {
-            parameter.Value = JsonConvert.SerializeObject(doc, SerializerSetting);
+            parameter.Value = JsonSerializer.Serialize(doc, SerializerSetting);
         }
     }
 }
