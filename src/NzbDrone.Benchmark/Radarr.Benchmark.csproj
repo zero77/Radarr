@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net462;netcoreapp3.0</TargetFrameworks>
+    <Platforms>x86</Platforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.30" />
+    <PackageReference Include="System.Data.SQLite.Core.Lidarr" Version="1.0.111.0-5" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NzbDrone.Core\Radarr.Core.csproj" />
+  </ItemGroup>
+</Project>

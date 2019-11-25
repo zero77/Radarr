@@ -38,6 +38,8 @@ using NzbDrone.Core.NetImport;
 using NzbDrone.Core.NetImport.ImportExclusions;
 using NzbDrone.Core.Movies.AlternativeTitles;
 using NzbDrone.Core.Languages;
+using static Dapper.SqlMapper;
+using Dapper;
 
 namespace NzbDrone.Core.Datastore
 {
@@ -203,6 +205,51 @@ namespace NzbDrone.Core.Datastore
                 MapRepository.Instance.RegisterTypeConverter(embeddedType, embeddedConvertor);
                 MapRepository.Instance.RegisterTypeConverter(embeddedListType, embeddedConvertor);
             }
+        }
+
+        public static void MapDapper()
+        {
+            RegisterEmbeddedConverterDapper();
+
+            SqlMapper.AddTypeHandler(new DapperQualityIntConverter());
+            SqlMapper.AddTypeHandler(new DapperLanguageIntConverter());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<Language>>(new LanguageIntConverter()));
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<ProfileQualityItem>>(new QualityIntConverter()));
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<ProfileFormatItem>>(new CustomFormatIntConverter()));
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<FormatTag>>(new QualityTagStringConverter()));
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<QualityModel>(new CustomFormatIntConverter(), new QualityIntConverter()));
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<Dictionary<string, string>>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<IDictionary<string, string>>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<int>>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<KeyValuePair<string, int>>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<List<string>>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<ParsedMovieInfo>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<ReleaseInfo>());
+            SqlMapper.AddTypeHandler(new DapperEmbeddedDocumentConverter<HashSet<int>>());
+        }
+
+        private static void RegisterEmbeddedConverterDapper()
+        {
+            var embeddedTypes = typeof(IEmbeddedDocument).Assembly.ImplementationsOf<IEmbeddedDocument>();
+
+            var embeddedConverterDefinition = typeof(DapperEmbeddedDocumentConverter<>).GetGenericTypeDefinition();
+            var genericListDefinition = typeof(List<>).GetGenericTypeDefinition();
+
+            foreach (var embeddedType in embeddedTypes)
+            {
+                var embeddedListType = genericListDefinition.MakeGenericType(embeddedType);
+
+                RegisterEmbeddedConverterDapper(embeddedType, embeddedConverterDefinition);
+                RegisterEmbeddedConverterDapper(embeddedListType, embeddedConverterDefinition);
+            }
+        }
+
+        private static void RegisterEmbeddedConverterDapper(Type embeddedType, Type embeddedConverterDefinition)
+        {
+            var embeddedConverterType = embeddedConverterDefinition.MakeGenericType(embeddedType);
+            var converter = (ITypeHandler) Activator.CreateInstance(embeddedConverterType);
+
+            SqlMapper.AddTypeHandler(embeddedType, converter);
         }
     }
 }

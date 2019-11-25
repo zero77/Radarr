@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data;
+using Dapper;
 using Marr.Data.Converters;
 using Marr.Data.Mapping;
 using Newtonsoft.Json;
@@ -60,6 +62,31 @@ namespace NzbDrone.Core.Datastore.Converters
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             writer.WriteValue(ToDB(value));
+        }
+    }
+
+    public class DapperLanguageIntConverter : SqlMapper.TypeHandler<Language>
+    {
+        public override void SetValue(IDbDataParameter parameter, Language value)
+        {
+            if (value == null)
+            {
+                throw new InvalidOperationException("Attempted to save a language that isn't really a language");
+            }
+            else
+            {
+                parameter.Value = (int) value;
+            }
+        }
+
+        public override Language Parse(object value)
+        {
+            if (value == null || value is DBNull)
+            {
+                return Language.Unknown;
+            }
+
+            return (Language) Convert.ToInt32(value);
         }
     }
 }

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using Marr.Data.Converters;
 using Marr.Data.Mapping;
 using NzbDrone.Core.Qualities;
 using Newtonsoft.Json;
+using Dapper;
+using System.Data;
 
 namespace NzbDrone.Core.Datastore.Converters
 {
@@ -54,6 +56,19 @@ namespace NzbDrone.Core.Datastore.Converters
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             writer.WriteValue(ToDB(value));
+        }
+    }
+
+    public class DapperQualityIntConverter : SqlMapper.TypeHandler<Quality>
+    {
+        public override void SetValue(IDbDataParameter parameter, Quality value)
+        {
+            parameter.Value = (int) value;
+        }
+
+        public override Quality Parse(object value)
+        {
+            return (Quality) Convert.ToInt32(value);
         }
     }
 }
