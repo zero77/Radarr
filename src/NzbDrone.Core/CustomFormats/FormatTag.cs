@@ -75,7 +75,7 @@ namespace NzbDrone.Core.CustomFormats
                 case TagType.Language:
                     return movieInfo.Languages.Contains((Language)Value);
                 case TagType.Resolution:
-                    return movieInfo.Quality.Quality.Resolution == (int)(Resolution) Value;
+                    return movieInfo.Quality.Quality.Resolution == (Resolution) Value;
                 case TagType.Modifier:
                     return movieInfo.Quality.Quality.Modifier == (Modifier) Value;
                 case TagType.Source:

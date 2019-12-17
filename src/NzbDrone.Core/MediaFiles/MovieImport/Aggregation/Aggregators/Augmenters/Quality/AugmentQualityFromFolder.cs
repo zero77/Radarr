@@ -15,7 +15,8 @@ namespace NzbDrone.Core.MediaFiles.MovieImport.Aggregation.Aggregators.Augmenter
 
             return new AugmentQualityResult(quality.Quality.Source,
                                             Confidence.Tag,
-                                            quality.Quality.Resolution,
+
+                                            (int)quality.Quality.Resolution,
                                             Confidence.Tag,
                                             quality.Quality.Modifier,
                                             Confidence.Tag,

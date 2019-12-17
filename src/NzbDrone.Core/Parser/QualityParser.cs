@@ -247,7 +247,7 @@ namespace NzbDrone.Core.Parser
                 if (sourceMatch.Groups["ts"].Success)
                 {
                     result.Quality = Quality.TELESYNC;
-                    result.Quality.Resolution = (int)resolution;
+                    result.Quality.Resolution = resolution;
                     return result;
                 }
 

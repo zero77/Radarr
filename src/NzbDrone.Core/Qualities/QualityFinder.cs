@@ -13,7 +13,7 @@ namespace NzbDrone.Core.Qualities
         public static Quality FindBySourceAndResolution(Source source, int resolution, Modifier modifer)
         {
             // Check for a perfect 3-way match
-            var matchingQuality = Quality.All.SingleOrDefault(q => q.Source == source && q.Resolution == resolution && q.Modifier == modifer);
+            var matchingQuality = Quality.All.SingleOrDefault(q => q.Source == source && q.Resolution == (Resolution)resolution && q.Modifier == modifer);
 
             if (matchingQuality != null)
             {
@@ -43,7 +43,7 @@ namespace NzbDrone.Core.Qualities
             //Check for Modifier match 
             var matchingModifier = Quality.All.Where(q => q.Modifier == modifer);
 
-            var matchingResolution = matchingModifier.Where(q => q.Resolution == resolution)
+            var matchingResolution = matchingModifier.Where(q => q.Resolution == (Resolution)resolution)
                                             .OrderBy(q => q.Source)
                                             .ToList();
 

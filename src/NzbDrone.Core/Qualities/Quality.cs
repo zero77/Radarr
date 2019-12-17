@@ -12,7 +12,7 @@ namespace NzbDrone.Core.Qualities
         public int Id { get; set; }
         public string Name { get; set; }
         public Source Source { get; set; }
-        public int Resolution { get; set; }
+        public Resolution Resolution { get; set; }
         public Modifier Modifier { get; set; }
 
         public Quality()
@@ -24,7 +24,7 @@ namespace NzbDrone.Core.Qualities
             Id = id;
             Name = name;
             Source = source;
-            Resolution = resolution;
+            Resolution = (Resolution)resolution;
             Modifier = modifier;
         }
 
