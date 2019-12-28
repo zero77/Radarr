@@ -14,7 +14,7 @@
     <PackageReference Include="RestSharp" Version="106.6.10" />
     <PackageReference Include="TinyTwitter" Version="1.1.2" />
     <PackageReference Include="Kveer.XmlRPC" Version="1.1.1" />
-    <PackageReference Include="System.Data.SQLite.Core.Lidarr" Version="1.0.111.0-5" />
+    <PackageReference Include="System.Data.SQLite.Core.Lidarr" Version="1.0.112.0-0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Marr.Data\Marr.Data.csproj" />
