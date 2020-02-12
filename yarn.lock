@@ -7553,10 +7553,10 @@ react-side-effect@^1.0.2:
   dependencies:
     shallowequal "^1.0.1"
 
-react-slider@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/react-slider/-/react-slider-1.0.1.tgz#4cb212d31c35d804805e31f02ce37771e95d5d45"
-  integrity sha512-SI2anLzeKlFxnntoM93VXrf3ll9uL/TYjIJB6PsQVp4mDVt2VfWyGtMoUvK/ir/PnjuirNtF1pU3cG9XCezfBA==
+react-slider@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/react-slider/-/react-slider-1.0.2.tgz#066e61ce5cfd7983dbee735971204f541f382d79"
+  integrity sha512-fl2qPKa5+z1YQ94H74xcB8JEyaxjQJQN4ZAVD+pfX/CN4tMdQwMDjB8Y2XmvVK4BjMwoYFaLG8zFKC4oHNcuGQ==
 
 react-tabs@3.0.0:
   version "3.0.0"

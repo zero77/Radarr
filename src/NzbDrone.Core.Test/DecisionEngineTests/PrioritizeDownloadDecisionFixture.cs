@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FizzWare.NBuilder;
@@ -37,6 +37,17 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
             _customFormat2 = new CustomFormat("My Format 2", new LanguageSpecification { Value = (int)Language.French }) { Id = 2 };
 
             CustomFormatsFixture.GivenCustomFormats(CustomFormat.None, _customFormat1, _customFormat2);
+
+            Mocker.GetMock<IQualityDefinitionService>()
+                  .Setup(s => s.Get(It.IsAny<Quality>()))
+                  .Returns(new QualityDefinition { PreferredSize = null });
+        }
+
+        private void GivenPreferredSize(double? size)
+        {
+            Mocker.GetMock<IQualityDefinitionService>()
+                  .Setup(s => s.Get(It.IsAny<Quality>()))
+                  .Returns(new QualityDefinition { PreferredSize = size });
         }
 
         private RemoteMovie GivenRemoteMovie(QualityModel quality, int age = 0, long size = 0, DownloadProtocol downloadProtocol = DownloadProtocol.Usenet)
@@ -51,9 +62,10 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
             {
                 Items = Qualities.QualityFixture.GetDefaultQualities(),
                 PreferredTags = new List<string> { "DTS-HD", "SPARKS" },
-                FormatItems = CustomFormatsFixture.GetSampleFormatItems()
+                FormatItems = CustomFormatsFixture.GetSampleFormatItems(),
             })
-                .With(m => m.Title = "A Movie").Build();
+                .With(m => m.Title = "A Movie")
+                .With(m => m.Runtime = 150).Build();
 
             remoteMovie.Release = new ReleaseInfo();
             remoteMovie.Release.PublishDate = DateTime.Now.AddDays(-age);
@@ -120,6 +132,61 @@ namespace NzbDrone.Core.Test.DecisionEngineTests
 
             var qualifiedReports = Subject.PrioritizeDecisionsForMovies(decisions);
             qualifiedReports.First().RemoteMovie.Should().Be(remoteEpisodeHdLargeYoung);
+        }
+
+        [Test]
+        public void should_order_by_closest_to_preferred_size_if_both_over()
+        {
+            // 2 MB/Min * 150 Min Runtime = 300 MB
+            GivenPreferredSize(2);
+
+            var remoteMovieSmall = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 400.Megabytes(), age: 1);
+            var remoteMovieLarge = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 15000.Megabytes(), age: 1);
+
+            var decisions = new List<DownloadDecision>();
+            decisions.Add(new DownloadDecision(remoteMovieSmall));
+            decisions.Add(new DownloadDecision(remoteMovieLarge));
+
+            var qualifiedReports = Subject.PrioritizeDecisionsForMovies(decisions);
+            qualifiedReports.First().RemoteMovie.Should().Be(remoteMovieSmall);
+        }
+
+        [Test]
+        public void should_order_by_closest_to_preferred_size_if_both_under()
+        {
+            // 390 MB/Min * 150 Min Runtime = 58,500 MB
+            GivenPreferredSize(390);
+
+            var remoteMovieSmall = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 100.Megabytes(), age: 1);
+            var remoteMovieLarge = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 15000.Megabytes(), age: 1);
+
+            var decisions = new List<DownloadDecision>();
+            decisions.Add(new DownloadDecision(remoteMovieSmall));
+            decisions.Add(new DownloadDecision(remoteMovieLarge));
+
+            var qualifiedReports = Subject.PrioritizeDecisionsForMovies(decisions);
+            qualifiedReports.First().RemoteMovie.Should().Be(remoteMovieLarge);
+        }
+
+        [Test]
+        public void should_order_by_closest_to_preferred_size_if_preferred_is_in_between()
+        {
+            // 46 MB/Min * 150 Min Runtime = 6900 MB
+            GivenPreferredSize(46);
+
+            var remoteMovie1 = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 100.Megabytes(), age: 1);
+            var remoteMovie2 = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 500.Megabytes(), age: 1);
+            var remoteMovie3 = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 7000.Megabytes(), age: 1);
+            var remoteMovie4 = GivenRemoteMovie(new QualityModel(Quality.HDTV720p), size: 15000.Megabytes(), age: 1);
+
+            var decisions = new List<DownloadDecision>();
+            decisions.Add(new DownloadDecision(remoteMovie1));
+            decisions.Add(new DownloadDecision(remoteMovie2));
+            decisions.Add(new DownloadDecision(remoteMovie3));
+            decisions.Add(new DownloadDecision(remoteMovie4));
+
+            var qualifiedReports = Subject.PrioritizeDecisionsForMovies(decisions);
+            qualifiedReports.First().RemoteMovie.Should().Be(remoteMovie3);
         }
 
         [Test]
