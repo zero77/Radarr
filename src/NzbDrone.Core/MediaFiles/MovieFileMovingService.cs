@@ -119,12 +119,6 @@ namespace NzbDrone.Core.MediaFiles
 
             _diskTransferService.TransferFile(movieFilePath, destinationFilePath, mode);
 
-            var oldMoviePath = movie.Path;
-
-            var newMoviePath = new OsPath(destinationFilePath).Directory.FullPath.TrimEnd(Path.DirectorySeparatorChar);
-
-            movie.Path = newMoviePath; //We update it when everything went well!
-
             movieFile.RelativePath = movie.Path.GetRelativePath(destinationFilePath);
 
             _updateMovieFileService.ChangeFileDateForFile(movieFile, movie);
@@ -140,37 +134,6 @@ namespace NzbDrone.Core.MediaFiles
 
             _mediaFileAttributeService.SetFilePermissions(destinationFilePath);
 
-            if (oldMoviePath != newMoviePath && _diskProvider.FolderExists(oldMoviePath))
-            {
-                //Let's move the old files before deleting the old folder. We could just do move folder, but the main file (movie file) is already moved, so eh.
-                var files = _diskProvider.GetFiles(oldMoviePath, SearchOption.AllDirectories);
-
-                foreach (var file in files)
-                {
-                    try
-                    {
-                        var destFile = Path.Combine(newMoviePath, oldMoviePath.GetRelativePath(file));
-                        _diskProvider.EnsureFolder(Path.GetDirectoryName(destFile));
-                        _diskProvider.MoveFile(file, destFile);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Warn(e, "Error while trying to move extra file {0} to new folder. Maybe it already exists? (Manual cleanup necessary!).", oldMoviePath.GetRelativePath(file));
-                    }
-                }
-
-                if (_diskProvider.GetFiles(oldMoviePath, SearchOption.AllDirectories).Count() == 0)
-                {
-                    _recycleBinProvider.DeleteFolder(oldMoviePath);
-                }
-            }
-
-            //Only update the movie path if we were successfull!
-            if (oldMoviePath != newMoviePath)
-            {
-                _movieService.UpdateMovie(movie);
-            }
-
             return movieFile;
         }
 
@@ -181,11 +144,10 @@ namespace NzbDrone.Core.MediaFiles
 
         private void EnsureMovieFolder(MovieFile movieFile, Movie movie, string filePath)
         {
-            var movieFolder = Path.GetDirectoryName(filePath);
+            var movieFileFolder = Path.GetDirectoryName(filePath);
 
-            //movie.Path = movieFolder;
+            var movieFolder = movie.Path;
             var rootFolder = new OsPath(movieFolder).Directory.FullPath;
-            var fileName = Path.GetFileName(filePath);
 
             if (!_diskProvider.FolderExists(rootFolder))
             {
@@ -199,6 +161,13 @@ namespace NzbDrone.Core.MediaFiles
             {
                 CreateFolder(movieFolder);
                 newEvent.MovieFolder = movieFolder;
+                changed = true;
+            }
+
+            if (movieFolder != movieFileFolder && !_diskProvider.FolderExists(movieFileFolder))
+            {
+                CreateFolder(movieFileFolder);
+                newEvent.MovieFileFolder = movieFileFolder;
                 changed = true;
             }
 

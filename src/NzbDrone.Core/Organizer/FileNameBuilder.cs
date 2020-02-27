@@ -62,6 +62,8 @@ namespace NzbDrone.Core.Organizer
 
         private static readonly char[] EpisodeTitleTrimCharacters = new[] { ' ', '.', '?' };
 
+        private static readonly Regex TitlePrefixRegex = new Regex(@"^(The|An|A) (.*?)((?: *\([^)]+\))*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         public FileNameBuilder(INamingConfigService namingConfigService,
                                IQualityDefinitionService qualityDefinitionService,
                                IUpdateMediaInfo mediaInfoUpdater,
@@ -86,6 +88,7 @@ namespace NzbDrone.Core.Organizer
             }
 
             var pattern = namingConfig.StandardMovieFormat;
+
             var tokenHandlers = new Dictionary<string, Func<TokenMatch, string>>(FileNameBuilderTokenEqualityComparer.Instance);
 
             UpdateMediaInfoIfNeeded(pattern, movieFile, movie);
@@ -98,11 +101,25 @@ namespace NzbDrone.Core.Organizer
             AddMovieFileTokens(tokenHandlers, movieFile);
             AddTagsTokens(tokenHandlers, movieFile);
 
-            var fileName = ReplaceTokens(pattern, tokenHandlers, namingConfig).Trim();
-            fileName = FileNameCleanupRegex.Replace(fileName, match => match.Captures[0].Value[0].ToString());
-            fileName = TrimSeparatorsRegex.Replace(fileName, string.Empty);
+            var splitPatterns = pattern.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var components = new List<string>();
 
-            return fileName;
+            foreach (var s in splitPatterns)
+            {
+                var splitPattern = s;
+
+                var component = ReplaceTokens(splitPattern, tokenHandlers, namingConfig).Trim();
+
+                component = FileNameCleanupRegex.Replace(component, match => match.Captures[0].Value[0].ToString());
+                component = TrimSeparatorsRegex.Replace(component, string.Empty);
+
+                if (component.IsNotNullOrWhiteSpace())
+                {
+                    components.Add(component);
+                }
+            }
+
+            return string.Join(Path.DirectorySeparatorChar.ToString(), components);
         }
 
         public string BuildFilePath(Movie movie, string fileName, string extension)
@@ -129,6 +146,7 @@ namespace NzbDrone.Core.Organizer
             var movieFile = movie.MovieFile;
 
             var pattern = namingConfig.MovieFolderFormat;
+
             var tokenHandlers = new Dictionary<string, Func<TokenMatch, string>>(FileNameBuilderTokenEqualityComparer.Instance);
 
             AddMovieTokens(tokenHandlers, movie);
@@ -147,8 +165,22 @@ namespace NzbDrone.Core.Organizer
                 AddMovieFileTokens(tokenHandlers, new MovieFile { SceneName = $"{movie.Title} {movie.Year}", RelativePath = $"{movie.Title} {movie.Year}" });
             }
 
-            string name = ReplaceTokens(namingConfig.MovieFolderFormat, tokenHandlers, namingConfig);
-            return CleanFolderName(name, namingConfig.ReplaceIllegalCharacters, namingConfig.ColonReplacementFormat);
+            var splitPatterns = pattern.Split(new char[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var components = new List<string>();
+
+            foreach (var s in splitPatterns)
+            {
+                var splitPattern = s;
+
+                var component = ReplaceTokens(splitPattern, tokenHandlers, namingConfig);
+
+                if (component.IsNotNullOrWhiteSpace())
+                {
+                    components.Add(component);
+                }
+            }
+
+            return string.Join(Path.DirectorySeparatorChar.ToString(), components);
         }
 
         public static string CleanTitle(string title)
@@ -162,24 +194,7 @@ namespace NzbDrone.Core.Organizer
 
         public static string TitleThe(string title)
         {
-            string[] prefixes = { "The ", "An ", "A " };
-
-            if (title.Length < 5)
-            {
-                return title;
-            }
-
-            foreach (string prefix in prefixes)
-            {
-                int prefix_length = prefix.Length;
-                if (prefix.ToLower() == title.Substring(0, prefix_length).ToLower())
-                {
-                    title = title.Substring(prefix_length) + ", " + prefix.Trim();
-                    break;
-                }
-            }
-
-            return title.Trim();
+            return TitlePrefixRegex.Replace(title, "$2, $1$3");
         }
 
         public static string CleanFileName(string name, bool replace = true, ColonReplacementFormat colonReplacement = ColonReplacementFormat.Delete)
@@ -198,12 +213,11 @@ namespace NzbDrone.Core.Organizer
             return result.Trim();
         }
 
-        public static string CleanFolderName(string name, bool replace = true, ColonReplacementFormat colonReplacement = ColonReplacementFormat.Delete)
+        public static string CleanFolderName(string name)
         {
             name = FileNameCleanupRegex.Replace(name, match => match.Captures[0].Value[0].ToString());
-            name = name.Trim(' ', '.');
 
-            return CleanFileName(name, replace, colonReplacement);
+            return name = name.Trim(' ', '.');
         }
 
         private void AddMovieTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, Movie movie)
@@ -211,6 +225,7 @@ namespace NzbDrone.Core.Organizer
             tokenHandlers["{Movie Title}"] = m => movie.Title;
             tokenHandlers["{Movie CleanTitle}"] = m => CleanTitle(movie.Title);
             tokenHandlers["{Movie Title The}"] = m => TitleThe(movie.Title);
+            tokenHandlers["{Movie TitleFirstCharacter}"] = m => TitleThe(movie.Title).Substring(0, 1).FirstCharToUpper();
         }
 
         private void AddTagsTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, MovieFile movieFile)
@@ -223,6 +238,12 @@ namespace NzbDrone.Core.Organizer
 
         private void AddReleaseDateTokens(Dictionary<string, Func<TokenMatch, string>> tokenHandlers, int releaseYear)
         {
+            if (releaseYear == 0)
+            {
+                tokenHandlers["{Release Year}"] = m => string.Empty;
+                return;
+            }
+
             tokenHandlers["{Release Year}"] = m => string.Format("{0}", releaseYear.ToString()); //Do I need m.CustomFormat?
         }
 

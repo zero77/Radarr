@@ -116,8 +116,8 @@ class NamingModal extends Component {
     const movieTokens = [
       { token: '{Movie Title}', example: 'Movie Title!' },
       { token: '{Movie CleanTitle}', example: 'Movie Title' },
-      { token: '{Movie TitleThe}', example: 'Movie Title, The' }
-
+      { token: '{Movie TitleThe}', example: 'Movie Title, The' },
+      { token: '{Movie TitleFirstCharacter}', example: 'M' }
     ];
 
     const movieIdTokens = [
@@ -155,6 +155,10 @@ class NamingModal extends Component {
     const originalTokens = [
       { token: '{Original Title}', example: 'Movie.Title.HDTV.x264-EVOLVE' },
       { token: '{Original Filename}', example: 'Movie.title.hdtv.x264-EVOLVE' }
+    ];
+
+    const dateTokens = [
+      { token: '{Release Year}', example: '2009' }
     ];
 
     return (
@@ -239,6 +243,28 @@ class NamingModal extends Component {
               <div className={styles.groups}>
                 {
                   movieIdTokens.map(({ token, example }) => {
+                    return (
+                      <NamingOption
+                        key={token}
+                        name={name}
+                        value={value}
+                        token={token}
+                        example={example}
+                        tokenSeparator={tokenSeparator}
+                        tokenCase={tokenCase}
+                        onPress={this.onOptionPress}
+                      />
+                    );
+                  }
+                  )
+                }
+              </div>
+            </FieldSet>
+
+            <FieldSet legend="Date">
+              <div className={styles.groups}>
+                {
+                  dateTokens.map(({ token, example }) => {
                     return (
                       <NamingOption
                         key={token}
