@@ -10,7 +10,9 @@
     "lint": "esprint check",
     "lint-fix": "esprint check --fix",
     "stylelint-linux": "stylelint $(find frontend -name '*.css') --config frontend/.stylelintrc",
-    "stylelint-windows": "stylelint frontend/**/*.css --config frontend/.stylelintrc"
+    "stylelint-windows": "stylelint frontend/**/*.css --config frontend/.stylelintrc",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "repository": "https://github.com/Radarr/Radarr",
   "author": "Team Radarr",
@@ -126,7 +128,8 @@
     "url-loader": "4.1.0",
     "webpack": "4.42.1",
     "webpack-stream": "5.2.1",
-    "worker-loader": "2.0.0"
+    "worker-loader": "2.0.0",
+    "snyk": "^1.381.0"
   },
   "main": "index.js",
   "browserslist": [
@@ -134,5 +137,6 @@
     "not ie 11",
     "not op_mini all",
     "not chrome < 60"
-  ]
+  ],
+  "snyk": true
 }
