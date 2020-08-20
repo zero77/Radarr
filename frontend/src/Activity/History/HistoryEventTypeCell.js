@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { icons, kinds } from 'Helpers/Props';
 import Icon from 'Components/Icon';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
+import { icons, kinds } from 'Helpers/Props';
 import styles from './HistoryEventTypeCell.css';
 
 function getIconName(eventType) {
@@ -19,6 +19,8 @@ function getIconName(eventType) {
       return icons.DELETE;
     case 'movieFileRenamed':
       return icons.ORGANIZE;
+    case 'downloadIgnored':
+      return icons.IGNORE;
     default:
       return icons.UNKNOWN;
   }
@@ -47,6 +49,8 @@ function getTooltip(eventType, data) {
       return 'Movie file deleted';
     case 'movieFileRenamed':
       return 'Movie file renamed';
+    case 'downloadIgnored':
+      return 'Movie Download Ignored';
     default:
       return 'Unknown event';
   }

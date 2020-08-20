@@ -31,7 +31,8 @@ namespace NzbDrone.Common.Disk
 
         public abstract long? GetAvailableSpace(string path);
         public abstract void InheritFolderPermissions(string filename);
-        public abstract void SetPermissions(string path, string mask, string user, string group);
+        public abstract void SetPermissions(string path, string mask);
+        public abstract void CopyPermissions(string sourcePath, string targetPath);
         public abstract long? GetTotalSize(string path);
 
         public DateTime FolderGetCreationTime(string path)
@@ -141,6 +142,13 @@ namespace NzbDrone.Common.Disk
             }
         }
 
+        public bool FolderEmpty(string path)
+        {
+            Ensure.That(path, () => path).IsValidPath();
+
+            return Directory.EnumerateFileSystemEntries(path).Empty();
+        }
+
         public string[] GetDirectories(string path)
         {
             Ensure.That(path, () => path).IsValidPath();
@@ -219,18 +227,13 @@ namespace NzbDrone.Common.Disk
                 throw new IOException(string.Format("Source and destination can't be the same {0}", source));
             }
 
-            var destExists = FileExists(destination);
-
-            if (destExists && overwrite)
+            if (FileExists(destination) && overwrite)
             {
                 DeleteFile(destination);
             }
 
             RemoveReadOnly(source);
-
-            // NET Core is too eager to copy/delete if overwrite is false
-            // Therefore we also set overwrite if we know destination doesn't exist
-            MoveFileInternal(source, destination, overwrite || !destExists);
+            MoveFileInternal(source, destination);
         }
 
         public void MoveFolder(string source, string destination, bool overwrite = false)
@@ -252,13 +255,9 @@ namespace NzbDrone.Common.Disk
             Directory.Move(source, destination);
         }
 
-        protected virtual void MoveFileInternal(string source, string destination, bool overwrite)
+        protected virtual void MoveFileInternal(string source, string destination)
         {
-#if NETCOREAPP
-            File.Move(source, destination, overwrite);
-#else
             File.Move(source, destination);
-#endif
         }
 
         public abstract bool TryCreateHardLink(string source, string destination);
@@ -527,14 +526,21 @@ namespace NzbDrone.Common.Disk
 
         public void RemoveEmptySubfolders(string path)
         {
-            var subfolders = GetDirectories(path);
-            var files = GetFiles(path, SearchOption.AllDirectories);
-
-            foreach (var subfolder in subfolders)
+            // Depth first search for empty subdirectories
+            foreach (var subdir in Directory.EnumerateDirectories(path))
             {
-                if (files.None(f => subfolder.IsParentPath(f)))
+                RemoveEmptySubfolders(subdir);
+
+                if (Directory.EnumerateFileSystemEntries(subdir).Empty())
                 {
-                    DeleteFolder(subfolder, false);
+                    try
+                    {
+                        Directory.Delete(subdir, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn(ex, "Failed to remove empty directory {0}", subdir);
+                    }
                 }
             }
         }
@@ -545,6 +551,11 @@ namespace NzbDrone.Common.Disk
             {
                 stream.CopyTo(fileStream);
             }
+        }
+
+        public virtual bool IsValidFilePermissionMask(string mask)
+        {
+            throw new NotSupportedException();
         }
     }
 }

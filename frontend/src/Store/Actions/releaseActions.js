@@ -1,11 +1,12 @@
 import { createAction } from 'redux-actions';
-import createAjaxRequest from 'Utilities/createAjaxRequest';
 import { filterBuilderTypes, filterBuilderValueTypes, filterTypes, sortDirections } from 'Helpers/Props';
 import { createThunk, handleThunks } from 'Store/thunks';
-import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
-import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
+import createAjaxRequest from 'Utilities/createAjaxRequest';
+import translate from 'Utilities/String/translate';
 import createFetchHandler from './Creators/createFetchHandler';
 import createHandleActions from './Creators/createHandleActions';
+import createSetClientSideCollectionFilterReducer from './Creators/Reducers/createSetClientSideCollectionFilterReducer';
+import createSetClientSideCollectionSortReducer from './Creators/Reducers/createSetClientSideCollectionSortReducer';
 
 //
 // Variables
@@ -61,7 +62,7 @@ export const defaultState = {
   filters: [
     {
       key: 'all',
-      label: 'All',
+      label: translate('All'),
       filters: []
     }
   ],
@@ -80,56 +81,83 @@ export const defaultState = {
 
       // Default to false
       return false;
+    },
+
+    rejectionCount: function(item, value, type) {
+      const rejectionCount = item.rejections.length;
+
+      switch (type) {
+        case filterTypes.EQUAL:
+          return rejectionCount === value;
+
+        case filterTypes.GREATER_THAN:
+          return rejectionCount > value;
+
+        case filterTypes.GREATER_THAN_OR_EQUAL:
+          return rejectionCount >= value;
+
+        case filterTypes.LESS_THAN:
+          return rejectionCount < value;
+
+        case filterTypes.LESS_THAN_OR_EQUAL:
+          return rejectionCount <= value;
+
+        case filterTypes.NOT_EQUAL:
+          return rejectionCount !== value;
+
+        default:
+          return false;
+      }
     }
   },
 
   filterBuilderProps: [
     {
       name: 'title',
-      label: 'Title',
+      label: translate('Title'),
       type: filterBuilderTypes.STRING
     },
     {
       name: 'age',
-      label: 'Age',
+      label: translate('Age'),
       type: filterBuilderTypes.NUMBER
     },
     {
       name: 'protocol',
-      label: 'Protocol',
+      label: translate('Protocol'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.PROTOCOL
     },
     {
       name: 'indexerId',
-      label: 'Indexer',
+      label: translate('Indexer'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.INDEXER
     },
     {
       name: 'size',
-      label: 'Size',
+      label: translate('Size'),
       type: filterBuilderTypes.NUMBER
     },
     {
       name: 'seeders',
-      label: 'Seeders',
+      label: translate('Seeders'),
       type: filterBuilderTypes.NUMBER
     },
     {
       name: 'peers',
-      label: 'Peers',
+      label: translate('Peers'),
       type: filterBuilderTypes.NUMBER
     },
     {
       name: 'quality',
-      label: 'Quality',
+      label: translate('Quality'),
       type: filterBuilderTypes.EXACT,
       valueType: filterBuilderValueTypes.QUALITY
     },
     {
-      name: 'rejections',
-      label: 'Rejections',
+      name: 'rejectionCount',
+      label: translate('RejectionCount'),
       type: filterBuilderTypes.NUMBER
     }
   ],
@@ -233,17 +261,15 @@ export const reducers = createHandleActions({
     const guid = payload.guid;
     const newState = Object.assign({}, state);
     const items = newState.items;
-
-    // Return early if there aren't any items (the user closed the modal)
-    if (!items.length) {
-      return;
-    }
-
     const index = items.findIndex((item) => item.guid === guid);
-    const item = Object.assign({}, items[index], payload);
 
-    newState.items = [...items];
-    newState.items.splice(index, 1, item);
+    // Don't try to update if there isnt a matching item (the user closed the modal)
+    if (index >= 0) {
+      const item = Object.assign({}, items[index], payload);
+
+      newState.items = [...items];
+      newState.items.splice(index, 1, item);
+    }
 
     return newState;
   },

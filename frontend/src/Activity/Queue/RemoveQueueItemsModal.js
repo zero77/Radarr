@@ -1,15 +1,16 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import FormGroup from 'Components/Form/FormGroup';
+import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
 import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
-import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
-import FormInputGroup from 'Components/Form/FormInputGroup';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { inputTypes, kinds, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import styles from './RemoveQueueItemsModal.css';
 
 class RemoveQueueItemsModal extends Component {
@@ -21,26 +22,41 @@ class RemoveQueueItemsModal extends Component {
     super(props, context);
 
     this.state = {
+      remove: true,
       blacklist: false
     };
   }
 
   //
-  // Listeners
+  // Control
+
+   resetState = function() {
+     this.setState({
+       remove: true,
+       blacklist: false
+     });
+   }
+
+   //
+   // Listeners
+
+   onRemoveChange = ({ value }) => {
+     this.setState({ remove: value });
+   }
 
   onBlacklistChange = ({ value }) => {
     this.setState({ blacklist: value });
   }
 
-  onRemoveQueueItemConfirmed = () => {
-    const blacklist = this.state.blacklist;
+  onRemoveConfirmed = () => {
+    const state = this.state;
 
-    this.setState({ blacklist: false });
-    this.props.onRemovePress(blacklist);
+    this.resetState();
+    this.props.onRemovePress(state);
   }
 
   onModalClose = () => {
-    this.setState({ blacklist: false });
+    this.resetState();
     this.props.onModalClose();
   }
 
@@ -50,10 +66,11 @@ class RemoveQueueItemsModal extends Component {
   render() {
     const {
       isOpen,
-      selectedCount
+      selectedCount,
+      canIgnore
     } = this.props;
 
-    const blacklist = this.state.blacklist;
+    const { remove, blacklist } = this.state;
 
     return (
       <Modal
@@ -74,12 +91,28 @@ class RemoveQueueItemsModal extends Component {
             </div>
 
             <FormGroup>
-              <FormLabel>Blacklist Release</FormLabel>
+              <FormLabel>Remove From Download Client</FormLabel>
+
+              <FormInputGroup
+                type={inputTypes.CHECK}
+                name="remove"
+                value={remove}
+                helpTextWarning="Removing will remove the download and the file(s) from the download client."
+                isDisabled={!canIgnore}
+                onChange={this.onRemoveChange}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormLabel>
+                Blacklist Release{selectedCount > 1 ? 's' : ''}
+              </FormLabel>
+
               <FormInputGroup
                 type={inputTypes.CHECK}
                 name="blacklist"
                 value={blacklist}
-                helpText="Prevents Radarr from automatically grabbing this release again"
+                helpText="Prevents Radarr from automatically grabbing this movie again"
                 onChange={this.onBlacklistChange}
               />
             </FormGroup>
@@ -88,12 +121,12 @@ class RemoveQueueItemsModal extends Component {
 
           <ModalFooter>
             <Button onPress={this.onModalClose}>
-              Close
+              {translate('Close')}
             </Button>
 
             <Button
               kind={kinds.DANGER}
-              onPress={this.onRemoveQueueItemConfirmed}
+              onPress={this.onRemoveConfirmed}
             >
               Remove
             </Button>
@@ -107,6 +140,7 @@ class RemoveQueueItemsModal extends Component {
 RemoveQueueItemsModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   selectedCount: PropTypes.number.isRequired,
+  canIgnore: PropTypes.bool.isRequired,
   onRemovePress: PropTypes.func.isRequired,
   onModalClose: PropTypes.func.isRequired
 };

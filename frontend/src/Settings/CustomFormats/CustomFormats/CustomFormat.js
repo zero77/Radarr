@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { icons, kinds } from 'Helpers/Props';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import IconButton from 'Components/Link/IconButton';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
+import { icons, kinds } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import EditCustomFormatModalConnector from './EditCustomFormatModalConnector';
 import styles from './CustomFormat.css';
 
@@ -132,7 +133,7 @@ class CustomFormat extends Component {
               </div>
             </div>
           }
-          confirmLabel="Delete"
+          confirmLabel={translate('Delete')}
           isSpinning={isDeleting}
           onConfirm={this.onConfirmDeleteCustomFormat}
           onCancel={this.onDeleteCustomFormatModalClose}

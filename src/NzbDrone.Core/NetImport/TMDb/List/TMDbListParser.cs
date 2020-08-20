@@ -1,22 +1,12 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.MetadataSource;
-using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.NetImport.TMDb.List
 {
     public class TMDbListParser : TMDbParser
     {
-        private readonly ISearchForNewMovie _skyhookProxy;
-
-        public TMDbListParser(ISearchForNewMovie skyhookProxy)
-            : base(skyhookProxy)
-        {
-            _skyhookProxy = skyhookProxy;
-        }
-
         public override IList<Movie> ParseResponse(NetImportResponse importResponse)
         {
             var movies = new List<Movie>();
@@ -26,7 +16,7 @@ namespace NzbDrone.Core.NetImport.TMDb.List
                 return movies;
             }
 
-            var jsonResponse = JsonConvert.DeserializeObject<ListResponseRoot>(importResponse.Content);
+            var jsonResponse = JsonConvert.DeserializeObject<ListResponseResource>(importResponse.Content);
 
             // no movies were return
             if (jsonResponse == null)
@@ -34,15 +24,15 @@ namespace NzbDrone.Core.NetImport.TMDb.List
                 return movies;
             }
 
-            foreach (var movie in jsonResponse.results)
+            foreach (var movie in jsonResponse.Items)
             {
                 // Movies with no Year Fix
-                if (string.IsNullOrWhiteSpace(movie.release_date))
+                if (string.IsNullOrWhiteSpace(movie.ReleaseDate))
                 {
                     continue;
                 }
 
-                movies.AddIfNotNull(_skyhookProxy.MapMovie(movie));
+                movies.AddIfNotNull(MapListMovie(movie));
             }
 
             return movies;

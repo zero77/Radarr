@@ -1,8 +1,11 @@
-﻿namespace NzbDrone.Core.NetImport
+namespace NzbDrone.Core.NetImport
 {
     public enum NetImportType
     {
+        Program,
         TMDB,
-        Other
+        Trakt,
+        Other,
+        Advanced
     }
 }

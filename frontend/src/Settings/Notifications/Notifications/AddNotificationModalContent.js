@@ -2,10 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import translate from 'Utilities/String/translate';
 import AddNotificationItem from './AddNotificationItem';
 import styles from './AddNotificationModalContent.css';
 
@@ -65,7 +66,7 @@ class AddNotificationModalContent extends Component {
           <Button
             onPress={onModalClose}
           >
-            Close
+            {translate('Close')}
           </Button>
         </ModalFooter>
       </ModalContent>

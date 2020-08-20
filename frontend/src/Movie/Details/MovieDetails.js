@@ -1,45 +1,49 @@
 import _ from 'lodash';
+import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import TextTruncate from 'react-text-truncate';
-import formatBytes from 'Utilities/Number/formatBytes';
-import selectAll from 'Utilities/Table/selectAll';
-import toggleSelected from 'Utilities/Table/toggleSelected';
-import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
-import fonts from 'Styles/Variables/fonts';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
-import IconButton from 'Components/Link/IconButton';
 import InfoLabel from 'Components/InfoLabel';
-import MovieStatusLabel from './MovieStatusLabel';
+import IconButton from 'Components/Link/IconButton';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import Marquee from 'Components/Marquee';
 import Measure from 'Components/Measure';
 import MonitorToggleButton from 'Components/MonitorToggleButton';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
+import PageContentBody from 'Components/Page/PageContentBody';
 import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
+import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
 import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
-import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
 import Popover from 'Components/Tooltip/Popover';
+import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
 import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
+import InteractiveSearchFilterMenuConnector from 'InteractiveSearch/InteractiveSearchFilterMenuConnector';
+import InteractiveSearchTable from 'InteractiveSearch/InteractiveSearchTable';
+import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
+import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
+import MovieHistoryTable from 'Movie/History/MovieHistoryTable';
+import MoviePoster from 'Movie/MoviePoster';
 import MovieFileEditorTable from 'MovieFile/Editor/MovieFileEditorTable';
 import ExtraFileTable from 'MovieFile/Extras/ExtraFileTable';
 import OrganizePreviewModalConnector from 'Organize/OrganizePreviewModalConnector';
 import QualityProfileNameConnector from 'Settings/Profiles/Quality/QualityProfileNameConnector';
-import MoviePoster from 'Movie/MoviePoster';
-import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
-import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
-import MovieHistoryTable from 'Movie/History/MovieHistoryTable';
-import MovieTitlesTable from './Titles/MovieTitlesTable';
+import fonts from 'Styles/Variables/fonts';
+import formatBytes from 'Utilities/Number/formatBytes';
+import translate from 'Utilities/String/translate';
+import selectAll from 'Utilities/Table/selectAll';
+import toggleSelected from 'Utilities/Table/toggleSelected';
+import MovieCollectionConnector from './../MovieCollectionConnector';
 import MovieCastPostersConnector from './Credits/Cast/MovieCastPostersConnector';
 import MovieCrewPostersConnector from './Credits/Crew/MovieCrewPostersConnector';
-import MovieAlternateTitles from './MovieAlternateTitles';
 import MovieDetailsLinks from './MovieDetailsLinks';
-import InteractiveSearchTable from 'InteractiveSearch/InteractiveSearchTable';
-import InteractiveSearchFilterMenuConnector from 'InteractiveSearch/InteractiveSearchFilterMenuConnector';
-// import MovieTagsConnector from './MovieTagsConnector';
+import MovieReleaseDatesConnector from './MovieReleaseDatesConnector';
+import MovieStatusLabel from './MovieStatusLabel';
+import MovieTagsConnector from './MovieTagsConnector';
+import MovieTitlesTable from './Titles/MovieTitlesTable';
 import styles from './MovieDetails.css';
 
 const defaultFontSize = parseInt(fonts.defaultFontSize);
@@ -78,8 +82,23 @@ class MovieDetails extends Component {
       allCollapsed: false,
       expandedState: {},
       selectedTabIndex: 0,
-      overviewHeight: 0
+      overviewHeight: 0,
+      titleWidth: 0
     };
+  }
+
+  componentDidMount() {
+    window.addEventListener('touchstart', this.onTouchStart);
+    window.addEventListener('touchend', this.onTouchEnd);
+    window.addEventListener('touchcancel', this.onTouchCancel);
+    window.addEventListener('touchmove', this.onTouchMove);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('touchstart', this.onTouchStart);
+    window.removeEventListener('touchend', this.onTouchEnd);
+    window.removeEventListener('touchcancel', this.onTouchCancel);
+    window.removeEventListener('touchmove', this.onTouchMove);
   }
 
   //
@@ -151,6 +170,62 @@ class MovieDetails extends Component {
     this.setState({ overviewHeight: height });
   }
 
+  onTitleMeasure = ({ width }) => {
+    this.setState({ titleWidth: width });
+  }
+
+  onTouchStart = (event) => {
+    const touches = event.touches;
+    const touchStart = touches[0].pageX;
+    const touchY = touches[0].pageY;
+
+    // Only change when swipe is on header, we need horizontal scroll on tables
+    if (touchY > 470) {
+      return;
+    }
+
+    if (touches.length !== 1) {
+      return;
+    }
+
+    if (
+      touchStart < 50 ||
+      this.props.isSidebarVisible ||
+      this.state.isEventModalOpen
+    ) {
+      return;
+    }
+
+    this._touchStart = touchStart;
+  }
+
+  onTouchEnd = (event) => {
+    const touches = event.changedTouches;
+    const currentTouch = touches[0].pageX;
+
+    if (!this._touchStart) {
+      return;
+    }
+
+    if (currentTouch > this._touchStart && currentTouch - this._touchStart > 100) {
+      this.props.onGoToMovie(this.props.previousMovie.titleSlug);
+    } else if (currentTouch < this._touchStart && this._touchStart - currentTouch > 100) {
+      this.props.onGoToMovie(this.props.nextMovie.titleSlug);
+    }
+
+    this._touchStart = null;
+  }
+
+  onTouchCancel = (event) => {
+    this._touchStart = null;
+  }
+
+  onTouchMove = (event) => {
+    if (!this._touchStart) {
+      return;
+    }
+  }
+
   //
   // Render
 
@@ -160,8 +235,13 @@ class MovieDetails extends Component {
       tmdbId,
       imdbId,
       title,
+      originalTitle,
       year,
+      inCinemas,
+      physicalRelease,
+      digitalRelease,
       runtime,
+      certification,
       ratings,
       path,
       sizeOnDisk,
@@ -171,10 +251,9 @@ class MovieDetails extends Component {
       collection,
       overview,
       youTubeTrailerId,
-      inCinemas,
+      isAvailable,
       images,
-      alternateTitles,
-      // tags,
+      tags,
       isSaving,
       isRefreshing,
       isSearching,
@@ -198,15 +277,19 @@ class MovieDetails extends Component {
       isDeleteMovieModalOpen,
       isInteractiveImportModalOpen,
       overviewHeight,
+      titleWidth,
       selectedTabIndex
     } = this.state;
+
+    const marqueeWidth = isSmallScreen ? titleWidth : (titleWidth - 150);
+    const friendlyRuntime = moment.utc((runtime * 60) * 1000).format('h[h] m[m]');
 
     return (
       <PageContent title={title}>
         <PageToolbar>
           <PageToolbarSection>
             <PageToolbarButton
-              label="Refresh & Scan"
+              label={translate('RefreshAndScan')}
               iconName={icons.REFRESH}
               spinningName={icons.REFRESH}
               title="Refresh information and scan disk"
@@ -215,7 +298,7 @@ class MovieDetails extends Component {
             />
 
             <PageToolbarButton
-              label="Search Movie"
+              label={translate('SearchMovie')}
               iconName={icons.SEARCH}
               isDisabled={!monitored}
               isSpinning={isSearching}
@@ -226,14 +309,14 @@ class MovieDetails extends Component {
             <PageToolbarSeparator />
 
             <PageToolbarButton
-              label="Preview Rename"
+              label={translate('PreviewRename')}
               iconName={icons.ORGANIZE}
               isDisabled={!hasMovieFiles}
               onPress={this.onOrganizePress}
             />
 
             <PageToolbarButton
-              label="Manual Import"
+              label={translate('ManualImport')}
               iconName={icons.INTERACTIVE}
               onPress={this.onInteractiveImportPress}
             />
@@ -241,20 +324,20 @@ class MovieDetails extends Component {
             <PageToolbarSeparator />
 
             <PageToolbarButton
-              label="Edit"
+              label={translate('Edit')}
               iconName={icons.EDIT}
               onPress={this.onEditMoviePress}
             />
 
             <PageToolbarButton
-              label="Delete"
+              label={translate('Delete')}
               iconName={icons.DELETE}
               onPress={this.onDeleteMoviePress}
             />
           </PageToolbarSection>
         </PageToolbar>
 
-        <PageContentBodyConnector innerClassName={styles.innerContentBody}>
+        <PageContentBody innerClassName={styles.innerContentBody}>
           <div className={styles.header}>
             <div
               className={styles.backdrop}
@@ -274,86 +357,138 @@ class MovieDetails extends Component {
               />
 
               <div className={styles.info}>
-                <div className={styles.titleRow}>
-                  <div className={styles.titleContainer}>
-                    <div className={styles.toggleMonitoredContainer}>
-                      <MonitorToggleButton
-                        className={styles.monitorToggleButton}
-                        monitored={monitored}
-                        isSaving={isSaving}
-                        size={40}
-                        onPress={onMonitorTogglePress}
+                <Measure onMeasure={this.onTitleMeasure}>
+                  <div className={styles.titleRow}>
+                    <div className={styles.titleContainer}>
+                      <div className={styles.toggleMonitoredContainer}>
+                        <MonitorToggleButton
+                          className={styles.monitorToggleButton}
+                          monitored={monitored}
+                          isSaving={isSaving}
+                          size={40}
+                          onPress={onMonitorTogglePress}
+                        />
+                      </div>
+
+                      <div className={styles.title} style={{ width: marqueeWidth }}>
+                        <Marquee text={title} title={originalTitle} />
+                      </div>
+                    </div>
+
+                    <div className={styles.movieNavigationButtons}>
+                      <IconButton
+                        className={styles.movieNavigationButton}
+                        name={icons.ARROW_LEFT}
+                        size={30}
+                        title={`Go to ${previousMovie.title}`}
+                        to={`/movie/${previousMovie.titleSlug}`}
+                      />
+
+                      <IconButton
+                        className={styles.movieNavigationButton}
+                        name={icons.ARROW_RIGHT}
+                        size={30}
+                        title={`Go to ${nextMovie.title}`}
+                        to={`/movie/${nextMovie.titleSlug}`}
                       />
                     </div>
-
-                    <div className={styles.title}>
-                      {title}
-                    </div>
-
-                    {
-                      !!alternateTitles.length &&
-                        <div className={styles.alternateTitlesIconContainer}>
-                          <Popover
-                            anchor={
-                              <Icon
-                                name={icons.ALTERNATE_TITLES}
-                                size={20}
-                              />
-                            }
-                            title="Alternate Titles"
-                            body={<MovieAlternateTitles alternateTitles={alternateTitles} />}
-                            position={tooltipPositions.BOTTOM}
-                          />
-                        </div>
-                    }
                   </div>
-
-                  <div className={styles.movieNavigationButtons}>
-                    <IconButton
-                      className={styles.movieNavigationButton}
-                      name={icons.ARROW_LEFT}
-                      size={30}
-                      title={`Go to ${previousMovie.title}`}
-                      to={`/movie/${previousMovie.titleSlug}`}
-                    />
-
-                    <IconButton
-                      className={styles.movieNavigationButton}
-                      name={icons.ARROW_RIGHT}
-                      size={30}
-                      title={`Go to ${nextMovie.title}`}
-                      to={`/movie/${nextMovie.titleSlug}`}
-                    />
-                  </div>
-                </div>
+                </Measure>
 
                 <div className={styles.details}>
                   <div>
                     {
+                      !!certification &&
+                        <span className={styles.certification}>
+                          {certification}
+                        </span>
+                    }
+
+                    {
                       year > 0 &&
                         <span className={styles.year}>
-                          {year}
+                          <Popover
+                            anchor={
+                              year
+                            }
+                            title="Release Dates"
+                            body={
+                              <MovieReleaseDatesConnector
+                                inCinemas={inCinemas}
+                                physicalRelease={physicalRelease}
+                                digitalRelease={digitalRelease}
+                              />
+                            }
+                            position={tooltipPositions.BOTTOM}
+                          />
                         </span>
                     }
 
                     {
                       !!runtime &&
                         <span className={styles.runtime}>
-                          {runtime} Minutes
+                          {friendlyRuntime}
                         </span>
                     }
 
-                    <HeartRating
-                      rating={ratings.value}
-                      iconSize={20}
-                    />
+                    {
+                      !!ratings &&
+                        <span className={styles.rating}>
+                          <HeartRating
+                            rating={ratings.value}
+                            iconSize={20}
+                            hideHeart={isSmallScreen}
+                          />
+                        </span>
+                    }
+
+                    {
+                      <span className={styles.links}>
+                        <Popover
+                          anchor={
+                            <Icon
+                              name={icons.EXTERNAL_LINK}
+                              size={20}
+                            />
+                          }
+                          title="Links"
+                          body={
+                            <MovieDetailsLinks
+                              tmdbId={tmdbId}
+                              imdbId={imdbId}
+                              youTubeTrailerId={youTubeTrailerId}
+                            />
+                          }
+                          position={tooltipPositions.BOTTOM}
+                        />
+                      </span>
+                    }
+
+                    {
+                      !!tags.length &&
+                        <span className={styles.tags}>
+                          <Popover
+                            anchor={
+                              <Icon
+                                name={icons.TAGS}
+                                size={20}
+                              />
+                            }
+                            title="Tags"
+                            body={
+                              <MovieTagsConnector movieId={id} />
+                            }
+                            position={tooltipPositions.BOTTOM}
+                          />
+                        </span>
+                    }
                   </div>
                 </div>
 
                 <div className={styles.detailsLabels}>
                   <InfoLabel
                     className={styles.detailsInfoLabel}
-                    title="Path"
+                    title={translate('Path')}
                     size={sizes.LARGE}
                   >
                     <span className={styles.path}>
@@ -363,7 +498,7 @@ class MovieDetails extends Component {
 
                   <InfoLabel
                     className={styles.detailsInfoLabel}
-                    title="Status"
+                    title={translate('Status')}
                     kind={kinds.DELETE}
                     size={sizes.LARGE}
                   >
@@ -371,14 +506,14 @@ class MovieDetails extends Component {
                       <MovieStatusLabel
                         hasMovieFiles={hasMovieFiles}
                         monitored={monitored}
-                        inCinemas={inCinemas}
+                        isAvailable={isAvailable}
                       />
                     </span>
                   </InfoLabel>
 
                   <InfoLabel
                     className={styles.detailsInfoLabel}
-                    title="Quality Profile"
+                    title={translate('QualityProfile')}
                     size={sizes.LARGE}
                   >
                     <span className={styles.qualityProfileName}>
@@ -392,7 +527,7 @@ class MovieDetails extends Component {
 
                   <InfoLabel
                     className={styles.detailsInfoLabel}
-                    title="Filesize"
+                    title={translate('Size')}
                     size={sizes.LARGE}
                   >
                     <span className={styles.sizeOnDisk}>
@@ -406,20 +541,24 @@ class MovieDetails extends Component {
                     !!collection &&
                       <InfoLabel
                         className={styles.detailsInfoLabel}
-                        title="Collection"
+                        title={translate('Collection')}
                         size={sizes.LARGE}
                       >
-                        <span className={styles.collection}>
-                          {collection.name}
-                        </span>
+                        <div className={styles.collection}>
+                          <MovieCollectionConnector
+                            tmdbId={collection.tmdbId}
+                            name={collection.name}
+                            movieId={id}
+                          />
+                        </div>
                       </InfoLabel>
                   }
 
                   {
-                    !!studio &&
+                    !!studio && !isSmallScreen &&
                       <InfoLabel
                         className={styles.detailsInfoLabel}
-                        title="Studio"
+                        title={translate('Studio')}
                         size={sizes.LARGE}
                       >
                         <span className={styles.studio}>
@@ -437,22 +576,6 @@ class MovieDetails extends Component {
                     />
                   </div>
                 </Measure>
-
-                <InfoLabel
-                  className={styles.detailsInfoLabel}
-                  title="Links"
-                  size={sizes.LARGE}
-                >
-                  <span className={styles.links}>
-                    {
-                      <MovieDetailsLinks
-                        tmdbId={tmdbId}
-                        imdbId={imdbId}
-                        youTubeTrailerId={youTubeTrailerId}
-                      />
-                    }
-                  </span>
-                </InfoLabel>
               </div>
             </div>
           </div>
@@ -486,42 +609,42 @@ class MovieDetails extends Component {
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  History
+                  {translate('History')}
                 </Tab>
 
                 <Tab
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  Search
+                  {translate('Search')}
                 </Tab>
 
                 <Tab
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  Files
+                  {translate('Files')}
                 </Tab>
 
                 <Tab
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  Titles
+                  {translate('Titles')}
                 </Tab>
 
                 <Tab
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  Cast
+                  {translate('Cast')}
                 </Tab>
 
                 <Tab
                   className={styles.tab}
                   selectedClassName={styles.selectedTab}
                 >
-                  Crew
+                  {translate('Crew')}
                 </Tab>
 
                 {
@@ -603,7 +726,7 @@ class MovieDetails extends Component {
             showImportMode={false}
             onModalClose={this.onInteractiveImportModalClose}
           />
-        </PageContentBodyConnector>
+        </PageContentBody>
       </PageContent>
     );
   }
@@ -614,8 +737,10 @@ MovieDetails.propTypes = {
   tmdbId: PropTypes.number.isRequired,
   imdbId: PropTypes.string,
   title: PropTypes.string.isRequired,
+  originalTitle: PropTypes.string,
   year: PropTypes.number.isRequired,
   runtime: PropTypes.number.isRequired,
+  certification: PropTypes.string,
   ratings: PropTypes.object.isRequired,
   path: PropTypes.string.isRequired,
   sizeOnDisk: PropTypes.number.isRequired,
@@ -625,7 +750,10 @@ MovieDetails.propTypes = {
   studio: PropTypes.string,
   collection: PropTypes.object,
   youTubeTrailerId: PropTypes.string,
+  isAvailable: PropTypes.bool.isRequired,
   inCinemas: PropTypes.string,
+  physicalRelease: PropTypes.string,
+  digitalRelease: PropTypes.string,
   overview: PropTypes.string.isRequired,
   images: PropTypes.arrayOf(PropTypes.object).isRequired,
   alternateTitles: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -636,6 +764,7 @@ MovieDetails.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   isPopulated: PropTypes.bool.isRequired,
   isSmallScreen: PropTypes.bool.isRequired,
+  isSidebarVisible: PropTypes.bool.isRequired,
   movieFilesError: PropTypes.object,
   movieCreditsError: PropTypes.object,
   extraFilesError: PropTypes.object,
@@ -644,7 +773,8 @@ MovieDetails.propTypes = {
   nextMovie: PropTypes.object.isRequired,
   onMonitorTogglePress: PropTypes.func.isRequired,
   onRefreshPress: PropTypes.func.isRequired,
-  onSearchPress: PropTypes.func.isRequired
+  onSearchPress: PropTypes.func.isRequired,
+  onGoToMovie: PropTypes.func.isRequired
 };
 
 MovieDetails.defaultProps = {

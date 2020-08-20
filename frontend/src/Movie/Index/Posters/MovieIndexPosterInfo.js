@@ -10,6 +10,10 @@ function MovieIndexPosterInfo(props) {
     qualityProfile,
     showQualityProfile,
     added,
+    inCinemas,
+    digitalRelease,
+    physicalRelease,
+    certification,
     path,
     sizeOnDisk,
     sortKey,
@@ -52,6 +56,60 @@ function MovieIndexPosterInfo(props) {
     );
   }
 
+  if (sortKey === 'inCinemas' && inCinemas) {
+    const inCinemasDate = getRelativeDate(
+      inCinemas,
+      shortDateFormat,
+      showRelativeDates,
+      {
+        timeFormat,
+        timeForToday: false
+      }
+    );
+
+    return (
+      <div className={styles.info}>
+        {`In Cinemas ${inCinemasDate}`}
+      </div>
+    );
+  }
+
+  if (sortKey === 'digitalRelease' && digitalRelease) {
+    const digitalReleaseDate = getRelativeDate(
+      digitalRelease,
+      shortDateFormat,
+      showRelativeDates,
+      {
+        timeFormat,
+        timeForToday: false
+      }
+    );
+
+    return (
+      <div className={styles.info}>
+        {`Digital ${digitalReleaseDate}`}
+      </div>
+    );
+  }
+
+  if (sortKey === 'physicalRelease' && physicalRelease) {
+    const physicalReleaseDate = getRelativeDate(
+      physicalRelease,
+      shortDateFormat,
+      showRelativeDates,
+      {
+        timeFormat,
+        timeForToday: false
+      }
+    );
+
+    return (
+      <div className={styles.info}>
+        {`Released ${physicalReleaseDate}`}
+      </div>
+    );
+  }
+
   if (sortKey === 'path') {
     return (
       <div className={styles.info}>
@@ -68,6 +126,14 @@ function MovieIndexPosterInfo(props) {
     );
   }
 
+  if (sortKey === 'certification') {
+    return (
+      <div className={styles.info}>
+        {certification}
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -76,6 +142,10 @@ MovieIndexPosterInfo.propTypes = {
   showQualityProfile: PropTypes.bool.isRequired,
   qualityProfile: PropTypes.object.isRequired,
   added: PropTypes.string,
+  inCinemas: PropTypes.string,
+  certification: PropTypes.string,
+  digitalRelease: PropTypes.string,
+  physicalRelease: PropTypes.string,
   path: PropTypes.string.isRequired,
   sizeOnDisk: PropTypes.number,
   sortKey: PropTypes.string.isRequired,

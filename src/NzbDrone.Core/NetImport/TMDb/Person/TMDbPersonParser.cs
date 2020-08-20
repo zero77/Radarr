@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.MetadataSource;
-using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Movies;
 
 namespace NzbDrone.Core.NetImport.TMDb.Person
@@ -10,13 +8,10 @@ namespace NzbDrone.Core.NetImport.TMDb.Person
     public class TMDbPersonParser : TMDbParser
     {
         private readonly TMDbPersonSettings _settings;
-        private readonly ISearchForNewMovie _skyhookProxy;
 
-        public TMDbPersonParser(TMDbPersonSettings settings, ISearchForNewMovie skyhookProxy)
-            : base(skyhookProxy)
+        public TMDbPersonParser(TMDbPersonSettings settings)
         {
             _settings = settings;
-            _skyhookProxy = skyhookProxy;
         }
 
         public override IList<Movie> ParseResponse(NetImportResponse importResponse)
@@ -28,7 +23,7 @@ namespace NzbDrone.Core.NetImport.TMDb.Person
                 return movies;
             }
 
-            var jsonResponse = JsonConvert.DeserializeObject<PersonCreditsRoot>(importResponse.Content);
+            var jsonResponse = JsonConvert.DeserializeObject<PersonCreditsResource>(importResponse.Content);
 
             // no movies were return
             if (jsonResponse == null)
@@ -40,31 +35,31 @@ namespace NzbDrone.Core.NetImport.TMDb.Person
 
             if (_settings.PersonCast)
             {
-                foreach (var movie in jsonResponse.cast)
+                foreach (var movie in jsonResponse.Cast)
                 {
                     // Movies with no Year Fix
-                    if (string.IsNullOrWhiteSpace(movie.release_date))
+                    if (string.IsNullOrWhiteSpace(movie.ReleaseDate))
                     {
                         continue;
                     }
 
-                    movies.AddIfNotNull(_skyhookProxy.MapMovie(movie));
+                    movies.AddIfNotNull(new Movie { TmdbId = movie.Id });
                 }
             }
 
             if (crewTypes.Count > 0)
             {
-                foreach (var movie in jsonResponse.crew)
+                foreach (var movie in jsonResponse.Crew)
                 {
                     // Movies with no Year Fix
-                    if (string.IsNullOrWhiteSpace(movie.release_date))
+                    if (string.IsNullOrWhiteSpace(movie.ReleaseDate))
                     {
                         continue;
                     }
 
-                    if (crewTypes.Contains(movie.department))
+                    if (crewTypes.Contains(movie.Department))
                     {
-                        movies.AddIfNotNull(_skyhookProxy.MapMovie(movie));
+                        movies.AddIfNotNull(new Movie { TmdbId = movie.Id });
                     }
                 }
             }

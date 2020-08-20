@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import FieldSet from 'Components/FieldSet';
 import PageSectionContent from 'Components/Page/PageSectionContent';
+import translate from 'Utilities/String/translate';
 import QualityDefinitionConnector from './QualityDefinitionConnector';
 import styles from './QualityDefinitions.css';
 
@@ -18,7 +19,7 @@ class QualityDefinitions extends Component {
     } = this.props;
 
     return (
-      <FieldSet legend="Quality Definitions">
+      <FieldSet legend={translate('QualityDefinitions')}>
         <PageSectionContent
           errorMessage="Unable to load Quality Definitions"
           {...otherProps}

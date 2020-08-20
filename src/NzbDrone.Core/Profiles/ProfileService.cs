@@ -21,6 +21,7 @@ namespace NzbDrone.Core.Profiles
         Profile Get(int id);
         bool Exists(int id);
         Profile GetDefaultProfile(string name, Quality cutoff = null, params Quality[] allowed);
+        List<Language> GetAcceptableLanguages(int profileId);
     }
 
     public class ProfileService : IProfileService,
@@ -201,8 +202,7 @@ namespace NzbDrone.Core.Profiles
                 Quality.WEBRip1080p,
                 Quality.Bluray720p,
                 Quality.Bluray1080p,
-                Quality.Remux1080p,
-                Quality.Remux2160p);
+                Quality.Remux1080p);
         }
 
         public Profile GetDefaultProfile(string name, Quality cutoff = null, params Quality[] allowed)
@@ -263,6 +263,24 @@ namespace NzbDrone.Core.Profiles
             };
 
             return qualityProfile;
+        }
+
+        public List<Language> GetAcceptableLanguages(int profileId)
+        {
+            var profile = Get(profileId);
+
+            var wantedTitleLanguages = profile.FormatItems.Where(i => i.Score > 0).Select(item => item.Format)
+                .SelectMany(format => format.Specifications)
+                .Where(specification => specification is LanguageSpecification && !specification.Negate)
+                .Cast<LanguageSpecification>()
+                .Where(specification => specification.Value > 0)
+                .Select(specification => (Language)specification.Value)
+                .Distinct()
+                .ToList();
+
+            wantedTitleLanguages.Add(profile.Language);
+
+            return wantedTitleLanguages;
         }
 
         private Profile AddDefaultProfile(string name, Quality cutoff, params Quality[] allowed)

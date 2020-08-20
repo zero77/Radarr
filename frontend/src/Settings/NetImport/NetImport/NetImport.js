@@ -1,9 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { kinds } from 'Helpers/Props';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
+import { kinds } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import EditNetImportModalConnector from './EditNetImportModalConnector';
 import styles from './NetImport.css';
 
@@ -107,7 +108,7 @@ class NetImport extends Component {
           kind={kinds.DANGER}
           title="Delete List"
           message={`Are you sure you want to delete the list '${name}'?`}
-          confirmLabel="Delete"
+          confirmLabel={translate('Delete')}
           onConfirm={this.onConfirmDeleteNetImport}
           onCancel={this.onDeleteNetImportModalClose}
         />

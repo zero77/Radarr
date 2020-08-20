@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using NLog;
@@ -47,7 +47,11 @@ namespace NzbDrone.Windows.Disk
             file.SetAccessControl(fs);
         }
 
-        public override void SetPermissions(string path, string mask, string user, string group)
+        public override void SetPermissions(string path, string mask)
+        {
+        }
+
+        public override void CopyPermissions(string sourcePath, string targetPath)
         {
         }
 

@@ -1,26 +1,28 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import PageContent from 'Components/Page/PageContent';
+import PageContentBody from 'Components/Page/PageContentBody';
+import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
+import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
+import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
+import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import Table from 'Components/Table/Table';
+import TableBody from 'Components/Table/TableBody';
+import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
+import TablePager from 'Components/Table/TablePager';
+import { align, icons } from 'Helpers/Props';
+import getRemovedItems from 'Utilities/Object/getRemovedItems';
 import hasDifferentItems from 'Utilities/Object/hasDifferentItems';
+import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import removeOldSelectedState from 'Utilities/Table/removeOldSelectedState';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
-import { align, icons } from 'Helpers/Props';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import Table from 'Components/Table/Table';
-import TableBody from 'Components/Table/TableBody';
-import TablePager from 'Components/Table/TablePager';
-import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
-import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
-import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
-import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
-import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import RemoveQueueItemsModal from './RemoveQueueItemsModal';
 import QueueOptionsConnector from './QueueOptionsConnector';
 import QueueRowConnector from './QueueRowConnector';
+import RemoveQueueItemsModal from './RemoveQueueItemsModal';
 
 class Queue extends Component {
 
@@ -36,14 +38,28 @@ class Queue extends Component {
       lastToggled: null,
       selectedState: {},
       isPendingSelected: false,
-      isConfirmRemoveModalOpen: false
+      isConfirmRemoveModalOpen: false,
+      items: props.items
     };
   }
 
   componentDidUpdate(prevProps) {
-    if (hasDifferentItems(prevProps.items, this.props.items)) {
+    const {
+      items,
+      isFetching,
+      isMoviesFetching
+    } = this.props;
+
+    if (
+      (!isMoviesFetching && prevProps.isMoviesFetching) ||
+      (!isFetching && prevProps.isFetching) ||
+      (hasDifferentItems(prevProps.items, items) && !items.some((e) => e.movieId))
+    ) {
       this.setState((state) => {
-        return removeOldSelectedState(state, prevProps.items);
+        return {
+          ...removeOldSelectedState(state, getRemovedItems(prevProps.items, items)),
+          items
+        };
       });
 
       return;
@@ -51,7 +67,7 @@ class Queue extends Component {
 
     const selectedIds = this.getSelectedIds();
     const isPendingSelected = _.some(this.props.items, (item) => {
-      return selectedIds.indexOf(item.id) > -1 && item.status === 'Delay';
+      return selectedIds.indexOf(item.id) > -1 && item.status === 'delay';
     });
 
     if (isPendingSelected !== this.state.isPendingSelected) {
@@ -87,8 +103,8 @@ class Queue extends Component {
     this.setState({ isConfirmRemoveModalOpen: true });
   }
 
-  onRemoveSelectedConfirmed = (blacklist) => {
-    this.props.onRemoveSelectedPress(this.getSelectedIds(), blacklist);
+  onRemoveSelectedConfirmed = (payload) => {
+    this.props.onRemoveSelectedPress({ ids: this.getSelectedIds(), ...payload });
     this.setState({ isConfirmRemoveModalOpen: false });
   }
 
@@ -107,12 +123,11 @@ class Queue extends Component {
       isMoviesFetching,
       isMoviesPopulated,
       moviesError,
-      items,
       columns,
       totalRecords,
       isGrabbing,
       isRemoving,
-      isCheckForFinishedDownloadExecuting,
+      isRefreshMonitoredDownloadsExecuting,
       onRefreshPress,
       ...otherProps
     } = this.props;
@@ -122,13 +137,15 @@ class Queue extends Component {
       allUnselected,
       selectedState,
       isConfirmRemoveModalOpen,
-      isPendingSelected
+      isPendingSelected,
+      items
     } = this.state;
 
-    const isRefreshing = isFetching || isMoviesFetching || isCheckForFinishedDownloadExecuting;
+    const isRefreshing = isFetching || isMoviesFetching || isRefreshMonitoredDownloadsExecuting;
     const isAllPopulated = isPopulated && (isMoviesPopulated || !items.length || items.every((e) => !e.movieId));
     const hasError = error || moviesError;
-    const selectedCount = this.getSelectedIds().length;
+    const selectedIds = this.getSelectedIds();
+    const selectedCount = selectedIds.length;
     const disableSelectedActions = selectedCount === 0;
 
     return (
@@ -136,7 +153,7 @@ class Queue extends Component {
         <PageToolbar>
           <PageToolbarSection>
             <PageToolbarButton
-              label="Refresh"
+              label={translate('Refresh')}
               iconName={icons.REFRESH}
               isSpinning={isRefreshing}
               onPress={onRefreshPress}
@@ -170,14 +187,14 @@ class Queue extends Component {
               optionsComponent={QueueOptionsConnector}
             >
               <PageToolbarButton
-                label="Options"
+                label={translate('Options')}
                 iconName={icons.TABLE}
               />
             </TableOptionsModalWrapper>
           </PageToolbarSection>
         </PageToolbar>
 
-        <PageContentBodyConnector>
+        <PageContentBody>
           {
             isRefreshing && !isAllPopulated &&
               <LoadingIndicator />
@@ -234,11 +251,18 @@ class Queue extends Component {
                 />
               </div>
           }
-        </PageContentBodyConnector>
+        </PageContentBody>
 
         <RemoveQueueItemsModal
           isOpen={isConfirmRemoveModalOpen}
           selectedCount={selectedCount}
+          canIgnore={isConfirmRemoveModalOpen && (
+            selectedIds.every((id) => {
+              const item = items.find((i) => i.id === id);
+
+              return !!(item && item.movieId);
+            })
+          )}
           onRemovePress={this.onRemoveSelectedConfirmed}
           onModalClose={this.onConfirmRemoveModalClose}
         />
@@ -259,7 +283,7 @@ Queue.propTypes = {
   totalRecords: PropTypes.number,
   isGrabbing: PropTypes.bool.isRequired,
   isRemoving: PropTypes.bool.isRequired,
-  isCheckForFinishedDownloadExecuting: PropTypes.bool.isRequired,
+  isRefreshMonitoredDownloadsExecuting: PropTypes.bool.isRequired,
   onRefreshPress: PropTypes.func.isRequired,
   onGrabSelectedPress: PropTypes.func.isRequired,
   onRemoveSelectedPress: PropTypes.func.isRequired

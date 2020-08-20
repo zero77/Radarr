@@ -1,13 +1,12 @@
+import classNames from 'classnames';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import classNames from 'classnames';
-import { icons, kinds } from 'Helpers/Props';
+import CalendarEventQueueDetails from 'Calendar/Events/CalendarEventQueueDetails';
 import getStatusStyle from 'Calendar/getStatusStyle';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
-import CalendarEventQueueDetails from 'Calendar/Events/CalendarEventQueueDetails';
-import MovieTitleLink from 'Movie/MovieTitleLink';
+import { icons, kinds } from 'Helpers/Props';
 import styles from './AgendaEvent.css';
 
 class AgendaEvent extends Component {
@@ -41,12 +40,15 @@ class AgendaEvent extends Component {
       movieFile,
       title,
       titleSlug,
+      genres,
+      isAvailable,
       inCinemas,
       monitored,
       hasFile,
       grabbed,
       queueItem,
       showDate,
+      showMovieInformation,
       showCutoffUnmetIcon,
       longDateFormat,
       colorImpairedMode
@@ -55,14 +57,18 @@ class AgendaEvent extends Component {
     const startTime = moment(inCinemas);
     const downloading = !!(queueItem || grabbed);
     const isMonitored = monitored;
-    const statusStyle = getStatusStyle(hasFile, downloading, startTime, isMonitored);
+    const statusStyle = getStatusStyle(hasFile, downloading, isAvailable, isMonitored);
+    const joinedGenres = genres.slice(0, 2).join(', ');
+    const link = `/movie/${titleSlug}`;
 
     return (
       <div>
         <Link
-          className={styles.event}
-          component="div"
-          onPress={this.onPress}
+          className={classNames(
+            styles.event,
+            styles.link
+          )}
+          to={link}
         >
           <div className={styles.date}>
             {
@@ -79,11 +85,15 @@ class AgendaEvent extends Component {
             )}
           >
             <div className={styles.movieTitle}>
-              <MovieTitleLink
-                titleSlug={titleSlug}
-                title={title}
-              />
+              {title}
             </div>
+
+            {
+              showMovieInformation &&
+                <div className={styles.genres}>
+                  {joinedGenres}
+                </div>
+            }
 
             {
               !!queueItem &&
@@ -126,16 +136,23 @@ AgendaEvent.propTypes = {
   movieFile: PropTypes.object,
   title: PropTypes.string.isRequired,
   titleSlug: PropTypes.string.isRequired,
-  inCinemas: PropTypes.string.isRequired,
+  genres: PropTypes.arrayOf(PropTypes.string).isRequired,
+  isAvailable: PropTypes.bool.isRequired,
+  inCinemas: PropTypes.string,
   monitored: PropTypes.bool.isRequired,
   hasFile: PropTypes.bool.isRequired,
   grabbed: PropTypes.bool,
   queueItem: PropTypes.object,
   showDate: PropTypes.bool.isRequired,
+  showMovieInformation: PropTypes.bool.isRequired,
   showCutoffUnmetIcon: PropTypes.bool.isRequired,
   timeFormat: PropTypes.string.isRequired,
   longDateFormat: PropTypes.string.isRequired,
   colorImpairedMode: PropTypes.bool.isRequired
+};
+
+AgendaEvent.defaultProps = {
+  genres: []
 };
 
 export default AgendaEvent;

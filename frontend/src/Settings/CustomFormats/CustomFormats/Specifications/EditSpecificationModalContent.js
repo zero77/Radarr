@@ -1,19 +1,20 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { inputTypes, kinds } from 'Helpers/Props';
 import Alert from 'Components/Alert';
-import Link from 'Components/Link/Link';
-import Button from 'Components/Link/Button';
-import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
-import ModalBody from 'Components/Modal/ModalBody';
-import ModalFooter from 'Components/Modal/ModalFooter';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
 import ProviderFieldFormGroup from 'Components/Form/ProviderFieldFormGroup';
+import Button from 'Components/Link/Button';
+import Link from 'Components/Link/Link';
+import SpinnerErrorButton from 'Components/Link/SpinnerErrorButton';
+import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
+import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { inputTypes, kinds } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import styles from './EditSpecificationModalContent.css';
 
 function EditSpecificationModalContent(props) {
@@ -120,21 +121,21 @@ function EditSpecificationModalContent(props) {
               kind={kinds.DANGER}
               onPress={onDeleteSpecificationPress}
             >
-              Delete
+              {translate('Delete')}
             </Button>
         }
 
         <Button
           onPress={onCancelPress}
         >
-          Cancel
+          {translate('Cancel')}
         </Button>
 
         <SpinnerErrorButton
           isSpinning={false}
           onPress={onSavePress}
         >
-          Save
+          {translate('Save')}
         </SpinnerErrorButton>
       </ModalFooter>
     </ModalContent>

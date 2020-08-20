@@ -6,9 +6,10 @@ using NLog;
 using NzbDrone.Common.EnsureThat;
 using NzbDrone.Common.Http.Proxy;
 using NzbDrone.Core.Configuration.Events;
+using NzbDrone.Core.Languages;
 using NzbDrone.Core.MediaFiles;
 using NzbDrone.Core.Messaging.Events;
-using NzbDrone.Core.Parser;
+using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Security;
 
 namespace NzbDrone.Core.Configuration
@@ -134,6 +135,13 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("ImportExclusions", value); }
         }
 
+        public TMDbCountryCode CertificationCountry
+        {
+            get { return GetValueEnum("CertificationCountry", TMDbCountryCode.US); }
+
+            set { SetValue("CertificationCountry", value); }
+        }
+
         public int MaximumSize
         {
             get { return GetValueInt("MaximumSize", 0); }
@@ -180,12 +188,6 @@ namespace NzbDrone.Core.Configuration
             get { return GetValue("WhitelistedHardcodedSubs", ""); }
 
             set { SetValue("WhitelistedHardcodedSubs", value); }
-        }
-
-        public ParsingLeniencyType ParsingLeniency
-        {
-            get { return GetValueEnum<ParsingLeniencyType>("ParsingLeniency", ParsingLeniencyType.Strict); }
-            set { SetValue("ParsingLeniency", value); }
         }
 
         public bool RemoveCompletedDownloads
@@ -320,27 +322,6 @@ namespace NzbDrone.Core.Configuration
             set { SetValue("FileChmod", value); }
         }
 
-        public string FolderChmod
-        {
-            get { return GetValue("FolderChmod", "0755"); }
-
-            set { SetValue("FolderChmod", value); }
-        }
-
-        public string ChownUser
-        {
-            get { return GetValue("ChownUser", ""); }
-
-            set { SetValue("ChownUser", value); }
-        }
-
-        public string ChownGroup
-        {
-            get { return GetValue("ChownGroup", ""); }
-
-            set { SetValue("ChownGroup", value); }
-        }
-
         public int FirstDayOfWeek
         {
             get { return GetValueInt("FirstDayOfWeek", (int)CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek); }
@@ -388,6 +369,13 @@ namespace NzbDrone.Core.Configuration
             get { return GetValueBoolean("EnableColorImpairedMode", false); }
 
             set { SetValue("EnableColorImpairedMode", value); }
+        }
+
+        public int MovieInfoLanguage
+        {
+            get { return GetValueInt("MovieInfoLanguage", (int)Language.English); }
+
+            set { SetValue("MovieInfoLanguage", value); }
         }
 
         public bool CleanupMetadataImages

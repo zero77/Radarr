@@ -342,6 +342,12 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
                     return ""; // Intel(R) IPP
                 }
 
+                if (videoCodecLibrary.Contains("ZJMedia") ||
+                    videoCodecLibrary.Contains("DigiArty"))
+                {
+                    return ""; // Other
+                }
+
                 if (videoCodecLibrary == "")
                 {
                     return ""; // Unknown mp4v
@@ -351,6 +357,11 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
             if (videoFormat.ContainsIgnoreCase("VC-1"))
             {
                 return "VC1";
+            }
+
+            if (videoFormat.ContainsIgnoreCase("AV1"))
+            {
+                return "AV1";
             }
 
             if (videoFormat.ContainsIgnoreCase("VP6") || videoFormat.ContainsIgnoreCase("VP7") ||
@@ -483,21 +494,21 @@ namespace NzbDrone.Core.MediaFiles.MediaInfo
 
                         if (channelSplit.Count() == 3)
                         {
-                            positions += decimal.Parse(string.Format("{0}.{1}", channelSplit[1], channelSplit[2]));
+                            positions += decimal.Parse(string.Format("{0}.{1}", channelSplit[1], channelSplit[2]), CultureInfo.InvariantCulture);
                         }
                         else
                         {
-                            positions += decimal.Parse(channel);
+                            positions += decimal.Parse(channel, CultureInfo.InvariantCulture);
                         }
                     }
 
                     return positions;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Logger.Warn()
-                      .Message("Unable to format audio channels using 'AudioChannelPositions', with a value of: '{0}' and '{1}'", audioChannelPositions, mediaInfo.AudioChannelPositionsText)
+                      .Message("Unable to format audio channels using 'AudioChannelPositions', with a value of: '{0}' and '{1}'. Error {2}", audioChannelPositions, mediaInfo.AudioChannelPositionsText, ex.Message)
                       .WriteSentryWarn("UnknownAudioChannelFormat", audioChannelPositions, mediaInfo.AudioChannelPositionsText)
                       .Write();
             }

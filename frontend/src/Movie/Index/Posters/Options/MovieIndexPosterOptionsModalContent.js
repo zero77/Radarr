@@ -1,16 +1,17 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { inputTypes } from 'Helpers/Props';
-import Button from 'Components/Link/Button';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
+import FormLabel from 'Components/Form/FormLabel';
+import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { inputTypes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 
 const posterSizeOptions = [
   { key: 'small', value: 'Small' },
@@ -108,13 +109,13 @@ class MovieIndexPosterOptionsModalContent extends Component {
     return (
       <ModalContent onModalClose={onModalClose}>
         <ModalHeader>
-          Poster Options
+          {translate('PosterOptions')}
         </ModalHeader>
 
         <ModalBody>
           <Form>
             <FormGroup>
-              <FormLabel>Poster Size</FormLabel>
+              <FormLabel>{translate('PosterSize')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.SELECT}
@@ -126,19 +127,19 @@ class MovieIndexPosterOptionsModalContent extends Component {
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Detailed Progress Bar</FormLabel>
+              <FormLabel>{translate('DetailedProgressBar')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.CHECK}
                 name="detailedProgressBar"
                 value={detailedProgressBar}
-                helpText="Show text on progess bar"
+                helpText={translate('DetailedProgressBarHelpText')}
                 onChange={this.onChangePosterOption}
               />
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Show Title</FormLabel>
+              <FormLabel>{translate('ShowTitle')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.CHECK}
@@ -150,7 +151,7 @@ class MovieIndexPosterOptionsModalContent extends Component {
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Show Monitored</FormLabel>
+              <FormLabel>{translate('ShowMonitored')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.CHECK}
@@ -162,7 +163,7 @@ class MovieIndexPosterOptionsModalContent extends Component {
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Show Quality Profile</FormLabel>
+              <FormLabel>{translate('ShowQualityProfile')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.CHECK}
@@ -174,13 +175,13 @@ class MovieIndexPosterOptionsModalContent extends Component {
             </FormGroup>
 
             <FormGroup>
-              <FormLabel>Show Search</FormLabel>
+              <FormLabel>{translate('ShowSearch')}</FormLabel>
 
               <FormInputGroup
                 type={inputTypes.CHECK}
                 name="showSearchAction"
                 value={showSearchAction}
-                helpText="Show search button on hover"
+                helpText={translate('ShowSearchHelpText')}
                 onChange={this.onChangePosterOption}
               />
             </FormGroup>
@@ -191,7 +192,7 @@ class MovieIndexPosterOptionsModalContent extends Component {
           <Button
             onPress={onModalClose}
           >
-            Close
+            {translate('Close')}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -1,37 +1,37 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import ConfirmModal from 'Components/Modal/ConfirmModal';
+import PageContent from 'Components/Page/PageContent';
+import PageContentBody from 'Components/Page/PageContentBody';
+import PageJumpBar from 'Components/Page/PageJumpBar';
+import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
+import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
+import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
+import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
+import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
+import { align, icons, kinds, sortDirections } from 'Helpers/Props';
+import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
+import MovieEditorFooter from 'Movie/Editor/MovieEditorFooter.js';
+import OrganizeMovieModal from 'Movie/Editor/Organize/OrganizeMovieModal';
+import NoMovie from 'Movie/NoMovie';
 import getErrorMessage from 'Utilities/Object/getErrorMessage';
+import hasDifferentItemsOrOrder from 'Utilities/Object/hasDifferentItemsOrOrder';
+import translate from 'Utilities/String/translate';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
-import { align, icons, kinds, sortDirections } from 'Helpers/Props';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import PageJumpBar from 'Components/Page/PageJumpBar';
-import TableOptionsModalWrapper from 'Components/Table/TableOptions/TableOptionsModalWrapper';
-import PageToolbar from 'Components/Page/Toolbar/PageToolbar';
-import PageToolbarSeparator from 'Components/Page/Toolbar/PageToolbarSeparator';
-import PageToolbarSection from 'Components/Page/Toolbar/PageToolbarSection';
-import PageToolbarButton from 'Components/Page/Toolbar/PageToolbarButton';
-import ConfirmModal from 'Components/Modal/ConfirmModal';
-import NoMovie from 'Movie/NoMovie';
-import MovieIndexTableConnector from './Table/MovieIndexTableConnector';
-import MovieIndexTableOptionsConnector from './Table/MovieIndexTableOptionsConnector';
-import MovieIndexPosterOptionsModal from './Posters/Options/MovieIndexPosterOptionsModal';
-import MovieIndexPostersConnector from './Posters/MovieIndexPostersConnector';
-import MovieIndexOverviewOptionsModal from './Overview/Options/MovieIndexOverviewOptionsModal';
-import MovieIndexOverviewsConnector from './Overview/MovieIndexOverviewsConnector';
 import MovieIndexFilterMenu from './Menus/MovieIndexFilterMenu';
 import MovieIndexSortMenu from './Menus/MovieIndexSortMenu';
-import MovieIndexSearchMenu from './Menus/MovieIndexSearchMenu';
 import MovieIndexViewMenu from './Menus/MovieIndexViewMenu';
 import MovieIndexFooterConnector from './MovieIndexFooterConnector';
-import MovieEditorFooter from 'Movie/Editor/MovieEditorFooter.js';
-import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
-import OrganizeMovieModal from 'Movie/Editor/Organize/OrganizeMovieModal';
+import MovieIndexOverviewsConnector from './Overview/MovieIndexOverviewsConnector';
+import MovieIndexOverviewOptionsModal from './Overview/Options/MovieIndexOverviewOptionsModal';
+import MovieIndexPostersConnector from './Posters/MovieIndexPostersConnector';
+import MovieIndexPosterOptionsModal from './Posters/Options/MovieIndexPosterOptionsModal';
+import MovieIndexTableConnector from './Table/MovieIndexTableConnector';
+import MovieIndexTableOptionsConnector from './Table/MovieIndexTableOptionsConnector';
 import styles from './MovieIndex.css';
 
 function getViewComponent(view) {
@@ -274,12 +274,22 @@ class MovieIndex extends Component {
     }
   }
 
-  onSearchPress = (command) => {
-    this.setState({ isConfirmSearchModalOpen: true, searchType: command });
+  onSearchPress = () => {
+    this.setState({ isConfirmSearchModalOpen: true, searchType: 'moviesSearch' });
+  }
+
+  onRefreshMoviePress = () => {
+    const selectedMovieIds = this.getSelectedIds();
+    const refreshIds = this.state.isMovieEditorActive && selectedMovieIds.length > 0 ? selectedMovieIds : [];
+
+    this.props.onRefreshMoviePress(refreshIds);
   }
 
   onSearchConfirmed = () => {
-    this.props.onSearchPress(this.state.searchType);
+    const selectedMovieIds = this.getSelectedIds();
+    const searchIds = this.state.isMovieEditorActive && selectedMovieIds.length > 0 ? selectedMovieIds : this.props.items.map((m) => m.id);
+
+    this.props.onSearchPress(this.state.searchType, searchIds);
     this.setState({ isConfirmSearchModalOpen: false });
   }
 
@@ -342,21 +352,24 @@ class MovieIndex extends Component {
     const isLoaded = !!(!error && isPopulated && items.length && scroller);
     const hasNoMovie = !totalItems;
 
+    const searchIndexLabel = selectedFilterKey === 'all' ? translate('SearchAll') : translate('SearchFiltered');
+    const searchEditorLabel = selectedMovieIds.length > 0 ? translate('SearchSelected') : translate('SearchAll');
+
     return (
       <PageContent>
         <PageToolbar>
           <PageToolbarSection>
             <PageToolbarButton
-              label="Update all"
+              label={isMovieEditorActive && selectedMovieIds.length > 0 ? translate('UpdateSelected') : translate('UpdateAll')}
               iconName={icons.REFRESH}
               spinningName={icons.REFRESH}
               isSpinning={isRefreshingMovie}
               isDisabled={hasNoMovie}
-              onPress={onRefreshMoviePress}
+              onPress={this.onRefreshMoviePress}
             />
 
             <PageToolbarButton
-              label="RSS Sync"
+              label={translate('RssSync')}
               iconName={icons.RSS}
               isSpinning={isRssSyncExecuting}
               isDisabled={hasNoMovie}
@@ -365,13 +378,15 @@ class MovieIndex extends Component {
 
             <PageToolbarSeparator />
 
-            <MovieIndexSearchMenu
-              isDisabled={isSearchingMovies}
-              onSearchPress={this.onSearchPress}
+            <PageToolbarButton
+              label={isMovieEditorActive ? searchEditorLabel : searchIndexLabel}
+              iconName={icons.SEARCH}
+              isDisabled={isSearchingMovies || !items.length}
+              onPress={this.onSearchPress}
             />
 
             <PageToolbarButton
-              label="Manual Import"
+              label={translate('ManualImport')}
               iconName={icons.INTERACTIVE}
               isDisabled={hasNoMovie}
               onPress={this.onInteractiveImportPress}
@@ -382,13 +397,13 @@ class MovieIndex extends Component {
             {
               isMovieEditorActive ?
                 <PageToolbarButton
-                  label="Movie Index"
+                  label={translate('MovieIndex')}
                   iconName={icons.MOVIE_CONTINUING}
                   isDisabled={hasNoMovie}
                   onPress={this.onMovieEditorTogglePress}
                 /> :
                 <PageToolbarButton
-                  label="Movie Editor"
+                  label={translate('MovieEditor')}
                   iconName={icons.EDIT}
                   isDisabled={hasNoMovie}
                   onPress={this.onMovieEditorTogglePress}
@@ -398,7 +413,7 @@ class MovieIndex extends Component {
             {
               isMovieEditorActive ?
                 <PageToolbarButton
-                  label={allSelected ? 'Unselect All' : 'Select All'}
+                  label={allSelected ? translate('UnselectAll') : translate('SelectAll')}
                   iconName={icons.CHECK_SQUARE}
                   isDisabled={hasNoMovie}
                   onPress={this.onSelectAllPress}
@@ -420,7 +435,7 @@ class MovieIndex extends Component {
                   optionsComponent={MovieIndexTableOptionsConnector}
                 >
                   <PageToolbarButton
-                    label="Options"
+                    label={translate('Options')}
                     iconName={icons.TABLE}
                   />
                 </TableOptionsModalWrapper> :
@@ -430,7 +445,7 @@ class MovieIndex extends Component {
             {
               view === 'posters' ?
                 <PageToolbarButton
-                  label="Options"
+                  label={translate('Options')}
                   iconName={icons.POSTER}
                   isDisabled={hasNoMovie}
                   onPress={this.onPosterOptionsPress}
@@ -441,7 +456,7 @@ class MovieIndex extends Component {
             {
               view === 'overview' ?
                 <PageToolbarButton
-                  label="Options"
+                  label={translate('Options')}
                   iconName={icons.OVERVIEW}
                   isDisabled={hasNoMovie}
                   onPress={this.onOverviewOptionsPress}
@@ -449,10 +464,7 @@ class MovieIndex extends Component {
                 null
             }
 
-            {
-              (view === 'posters' || view === 'overview') &&
-                <PageToolbarSeparator />
-            }
+            <PageToolbarSeparator />
 
             <MovieIndexViewMenu
               view={view}
@@ -478,7 +490,7 @@ class MovieIndex extends Component {
         </PageToolbar>
 
         <div className={styles.pageContentBodyWrapper}>
-          <PageContentBodyConnector
+          <PageContentBody
             registerScroller={this.setScrollerRef}
             className={styles.contentBody}
             innerClassName={styles[`${view}InnerContentBody`]}
@@ -526,7 +538,7 @@ class MovieIndex extends Component {
               !error && isPopulated && !items.length &&
                 <NoMovie totalItems={totalItems} />
             }
-          </PageContentBodyConnector>
+          </PageContentBody>
 
           {
             isLoaded && !!jumpBarItems.order.length &&
@@ -576,18 +588,18 @@ class MovieIndex extends Component {
         <ConfirmModal
           isOpen={isConfirmSearchModalOpen}
           kind={kinds.DANGER}
-          title="Mass Movie Search"
+          title={translate('MassMovieSearch')}
           message={
             <div>
               <div>
-                Are you sure you want to perform mass movie search?
+                Are you sure you want to perform mass movie search for {isMovieEditorActive && selectedMovieIds.length > 0 ? selectedMovieIds.length : this.props.items.length} movies?
               </div>
               <div>
                 This cannot be cancelled once started without restarting Radarr.
               </div>
             </div>
           }
-          confirmLabel="Search"
+          confirmLabel={translate('Search')}
           onConfirm={this.onSearchConfirmed}
           onCancel={this.onConfirmSearchModalClose}
         />

@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import PageContent from 'Components/Page/PageContent';
+import PageContentBody from 'Components/Page/PageContentBody';
 import getSelectedIds from 'Utilities/Table/getSelectedIds';
 import selectAll from 'Utilities/Table/selectAll';
 import toggleSelected from 'Utilities/Table/toggleSelected';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import ImportMovieTableConnector from './ImportMovieTableConnector';
 import ImportMovieFooterConnector from './ImportMovieFooterConnector';
+import ImportMovieTableConnector from './ImportMovieTableConnector';
 
 class ImportMovie extends Component {
 
@@ -79,8 +79,8 @@ class ImportMovie extends Component {
       rootFolderId,
       path,
       rootFoldersFetching,
-      rootFoldersPopulated,
       rootFoldersError,
+      rootFoldersPopulated,
       unmappedFolders
     } = this.props;
 
@@ -93,29 +93,37 @@ class ImportMovie extends Component {
 
     return (
       <PageContent title="Import Movies">
-        <PageContentBodyConnector
+        <PageContentBody
           registerScroller={this.setScrollerRef}
           onScroll={this.onScroll}
         >
           {
-            rootFoldersFetching && !rootFoldersPopulated &&
-              <LoadingIndicator />
+            rootFoldersFetching ? <LoadingIndicator /> : null
           }
 
           {
-            !rootFoldersFetching && !!rootFoldersError &&
-              <div>Unable to load root folders</div>
+            !rootFoldersFetching && !!rootFoldersError ?
+              <div>Unable to load root folders</div> :
+              null
           }
 
           {
-            !rootFoldersError && rootFoldersPopulated && !unmappedFolders.length &&
+            !rootFoldersError &&
+            !rootFoldersFetching &&
+            rootFoldersPopulated &&
+            !unmappedFolders.length ?
               <div>
                 All movies in {path} have been imported
-              </div>
+              </div> :
+              null
           }
 
           {
-            !rootFoldersError && rootFoldersPopulated && !!unmappedFolders.length && scroller &&
+            !rootFoldersError &&
+            !rootFoldersFetching &&
+            rootFoldersPopulated &&
+            !!unmappedFolders.length &&
+            scroller ?
               <ImportMovieTableConnector
                 rootFolderId={rootFolderId}
                 unmappedFolders={unmappedFolders}
@@ -126,17 +134,21 @@ class ImportMovie extends Component {
                 onSelectAllChange={this.onSelectAllChange}
                 onSelectedChange={this.onSelectedChange}
                 onRemoveSelectedStateItem={this.onRemoveSelectedStateItem}
-              />
+              /> :
+              null
           }
-        </PageContentBodyConnector>
+        </PageContentBody>
 
         {
-          !rootFoldersError && rootFoldersPopulated && !!unmappedFolders.length &&
+          !rootFoldersError &&
+          !rootFoldersFetching &&
+          !!unmappedFolders.length ?
             <ImportMovieFooterConnector
               selectedIds={this.getSelectedIds()}
               onInputChange={this.onInputChange}
               onImportPress={this.onImportPress}
-            />
+            /> :
+            null
         }
       </PageContent>
     );

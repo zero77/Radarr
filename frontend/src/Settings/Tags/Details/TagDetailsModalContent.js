@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import split from 'Utilities/String/split';
-import { kinds } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
-import Button from 'Components/Link/Button';
 import Label from 'Components/Label';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
+import Button from 'Components/Link/Button';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { kinds } from 'Helpers/Props';
+import split from 'Utilities/String/split';
+import translate from 'Utilities/String/translate';
 import TagDetailsDelayProfile from './TagDetailsDelayProfile';
 import styles from './TagDetailsModalContent.css';
 
@@ -83,7 +84,7 @@ function TagDetailsModalContent(props) {
 
         {
           !!notifications.length &&
-            <FieldSet legend="Connections">
+            <FieldSet legend={translate('Connections')}>
               {
                 notifications.map((item) => {
                   return (
@@ -98,7 +99,7 @@ function TagDetailsModalContent(props) {
 
         {
           !!restrictions.length &&
-            <FieldSet legend="Restrictions">
+            <FieldSet legend={translate('Restrictions')}>
               {
                 restrictions.map((item) => {
                   return (
@@ -144,7 +145,7 @@ function TagDetailsModalContent(props) {
 
         {
           !!netImports.length &&
-            <FieldSet legend="Lists">
+            <FieldSet legend={translate('Lists')}>
               {
                 netImports.map((item) => {
                   return (
@@ -167,14 +168,14 @@ function TagDetailsModalContent(props) {
             isDisabled={isTagUsed}
             onPress={onDeleteTagPress}
           >
-            Delete
+            {translate('Delete')}
           </Button>
         }
 
         <Button
           onPress={onModalClose}
         >
-          Close
+          {translate('Close')}
         </Button>
       </ModalFooter>
     </ModalContent>

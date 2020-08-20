@@ -1,10 +1,11 @@
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import classNames from 'classnames';
-import { icons, kinds } from 'Helpers/Props';
 import Icon from 'Components/Icon';
 import Link from 'Components/Link/Link';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
+import { icons, kinds } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import EditRemotePathMappingModalConnector from './EditRemotePathMappingModalConnector';
 import styles from './RemotePathMapping.css';
 
@@ -89,7 +90,7 @@ class RemotePathMapping extends Component {
           kind={kinds.DANGER}
           title="Delete Delay Profile"
           message="Are you sure you want to delete this remote path mapping?"
-          confirmLabel="Delete"
+          confirmLabel={translate('Delete')}
           onConfirm={this.onConfirmDeleteRemotePathMapping}
           onCancel={this.onDeleteRemotePathMappingModalClose}
         />

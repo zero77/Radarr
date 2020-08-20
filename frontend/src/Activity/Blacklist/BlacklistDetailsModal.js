@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Button from 'Components/Link/Button';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
+import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import translate from 'Utilities/String/translate';
 
 class BlacklistDetailsModal extends Component {
 
@@ -68,7 +69,7 @@ class BlacklistDetailsModal extends Component {
 
           <ModalFooter>
             <Button onPress={onModalClose}>
-              Close
+              {translate('Close')}
             </Button>
           </ModalFooter>
         </ModalContent>

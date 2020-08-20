@@ -93,7 +93,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     {
                         var grabHistory = _historyService.FindByDownloadId(downloadClientItem.DownloadId)
                             .OrderByDescending(h => h.Date)
-                            .FirstOrDefault(h => h.EventType == HistoryEventType.Grabbed);
+                            .FirstOrDefault(h => h.EventType == MovieHistoryEventType.Grabbed);
 
                         if (Enum.TryParse(grabHistory?.Data.GetValueOrDefault("indexerFlags"), true, out IndexerFlags flags))
                         {
@@ -120,7 +120,6 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
                     {
                         movieFile.OriginalFilePath = GetOriginalFilePath(downloadClientItem, localMovie);
                         movieFile.SceneName = GetSceneName(downloadClientItem, localMovie);
-
                         var moveResult = _movieFileUpgrader.UpgradeMovieFile(movieFile, localMovie, copyOnly); //TODO: Check if this works
                         oldFiles = moveResult.OldFiles;
                     }
@@ -139,7 +138,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
                     if (downloadClientItem != null)
                     {
-                        _eventAggregator.PublishEvent(new MovieImportedEvent(localMovie, movieFile, newDownload, downloadClientItem.DownloadClient, downloadClientItem.DownloadId));
+                        _eventAggregator.PublishEvent(new MovieImportedEvent(localMovie, movieFile, newDownload, downloadClientItem, downloadClientItem.DownloadId));
                     }
                     else
                     {
@@ -189,7 +188,7 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
 
             if (folderMovieInfo != null)
             {
-                var folderPath = path.GetAncestorPath(folderMovieInfo.SimpleReleaseTitle);
+                var folderPath = path.GetAncestorPath(folderMovieInfo.OriginalTitle);
 
                 if (folderPath != null)
                 {
@@ -212,21 +211,18 @@ namespace NzbDrone.Core.MediaFiles.MovieImport
         {
             if (downloadClientItem != null)
             {
-                var title = Parser.Parser.RemoveFileExtension(downloadClientItem.Title);
-
-                var parsedTitle = Parser.Parser.ParseMovieTitle(title, false);
-
-                if (parsedTitle != null)
+                var sceneNameTitle = SceneChecker.GetSceneTitle(downloadClientItem.Title);
+                if (sceneNameTitle != null)
                 {
-                    return title;
+                    return sceneNameTitle;
                 }
             }
 
             var fileName = Path.GetFileNameWithoutExtension(localMovie.Path.CleanFilePath());
-
-            if (SceneChecker.IsSceneTitle(fileName))
+            var sceneNameFile = SceneChecker.GetSceneTitle(fileName);
+            if (sceneNameFile != null)
             {
-                return fileName;
+                return sceneNameFile;
             }
 
             return null;

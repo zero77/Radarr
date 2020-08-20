@@ -12,15 +12,13 @@ import {
   faFileArchive as farFileArchive,
   faFileVideo as farFileVideo,
   faFolder as farFolder,
-  faObjectGroup as farObjectGroup,
   faHdd as farHdd,
   faKeyboard as farKeyboard,
+  faObjectGroup as farObjectGroup,
   faObjectUngroup as farObjectUngroup
 } from '@fortawesome/free-regular-svg-icons';
-
 //
 // Solid
-
 import {
   faArrowCircleLeft as fasArrowCircleLeft,
   faArrowCircleRight as fasArrowCircleRight,
@@ -29,22 +27,23 @@ import {
   faBolt as fasBolt,
   faBookmark as fasBookmark,
   faBookReader as fasBookReader,
+  faBroadcastTower as fasBroadcastTower,
   faBug as fasBug,
   faBullhorn as fasBullhorn,
-  faBroadcastTower as fasBroadcastTower,
   faCalendarAlt as fasCalendarAlt,
   faCaretDown as fasCaretDown,
   faCheck as fasCheck,
+  faCheckCircle as fasCheckCircle,
   faCheckSquare as fasCheckSquare,
   faChevronCircleDown as fasChevronCircleDown,
   faChevronCircleRight as fasChevronCircleRight,
   faChevronCircleUp as fasChevronCircleUp,
-  faCheckCircle as fasCheckCircle,
   faCircle as fasCircle,
-  faCloudDownloadAlt as fasCloudDownloadAlt,
   faCloud as fasCloud,
+  faCloudDownloadAlt as fasCloudDownloadAlt,
   faCog as fasCog,
   faCogs as fasCogs,
+  faCompactDisc as fasCompactDisc,
   faCopy as fasCopy,
   faDesktop as fasDesktop,
   faDownload as fasDownload,
@@ -65,6 +64,7 @@ import {
   faHistory as fasHistory,
   faHome as fasHome,
   faInfoCircle as fasInfoCircle,
+  faLanguage as fasLanguage,
   faLaptop as fasLaptop,
   faLevelUpAlt as fasLevelUpAlt,
   faMedkit as fasMedkit,
@@ -77,26 +77,26 @@ import {
   faQuestionCircle as fasQuestionCircle,
   faRedoAlt as fasRedoAlt,
   faRetweet as fasRetweet,
-  faRss as fasRss,
   faRocket as fasRocket,
+  faRss as fasRss,
   faSave as fasSave,
   faSearch as fasSearch,
   faSignOutAlt as fasSignOutAlt,
   faSitemap as fasSitemap,
-  faSpinner as fasSpinner,
   faSort as fasSort,
   faSortDown as fasSortDown,
   faSortUp as fasSortUp,
+  faSpinner as fasSpinner,
   faStop as fasStop,
   faSync as fasSync,
-  faTags as fasTags,
   faTable as fasTable,
+  faTags as fasTags,
   faTh as fasTh,
   faThList as fasThList,
   faTicketAlt as fasTicketAlt,
-  faTrashAlt as fasTrashAlt,
   faTimes as fasTimes,
   faTimesCircle as fasTimesCircle,
+  faTrashAlt as fasTrashAlt,
   faUser as fasUser,
   faUserPlus as fasUserPlus,
   faVial as fasVial,
@@ -133,6 +133,7 @@ export const COLLAPSE = fasChevronCircleUp;
 export const COMPUTER = fasDesktop;
 export const DANGER = fasExclamationCircle;
 export const DELETE = fasTrashAlt;
+export const DISC = fasCompactDisc;
 export const DOWNLOAD = fasDownload;
 export const DOWNLOADED = fasDownload;
 export const DOWNLOADING = fasCloudDownloadAlt;
@@ -153,6 +154,7 @@ export const HEALTH = fasMedkit;
 export const HEART = fasHeart;
 export const HISTORY = fasHistory;
 export const HOUSEKEEPING = fasHome;
+export const IGNORE = fasTimesCircle;
 export const IN_CINEMAS = fasTicketAlt;
 export const INFO = fasInfoCircle;
 export const INTERACTIVE = fasUser;
@@ -204,6 +206,7 @@ export const TABLE = fasTable;
 export const TAGS = fasTags;
 export const TBA = fasQuestionCircle;
 export const TEST = fasVial;
+export const TRANSLATE = fasLanguage;
 export const UNGROUP = farObjectUngroup;
 export const UNKNOWN = fasQuestion;
 export const UNMONITORED = farBookmark;

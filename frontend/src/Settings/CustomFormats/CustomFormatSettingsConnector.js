@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { DndProvider } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import CustomFormatsConnector from './CustomFormats/CustomFormatsConnector';
+import PageContentBody from 'Components/Page/PageContentBody';
 import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
+import CustomFormatsConnector from './CustomFormats/CustomFormatsConnector';
 
 class CustomFormatSettingsConnector extends Component {
 
@@ -18,11 +18,11 @@ class CustomFormatSettingsConnector extends Component {
           showSave={false}
         />
 
-        <PageContentBodyConnector>
+        <PageContentBody>
           <DndProvider backend={HTML5Backend}>
             <CustomFormatsConnector />
           </DndProvider>
-        </PageContentBodyConnector>
+        </PageContentBody>
       </PageContent>
     );
   }

@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
 using NzbDrone.Common.Extensions;
-using NzbDrone.Core.MetadataSource;
-using NzbDrone.Core.MetadataSource.SkyHook.Resource;
+using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.NetImport.Exceptions;
 
@@ -11,13 +11,6 @@ namespace NzbDrone.Core.NetImport.TMDb
 {
     public class TMDbParser : IParseNetImportResponse
     {
-        private readonly ISearchForNewMovie _skyhookProxy;
-
-        public TMDbParser(ISearchForNewMovie skyhookProxy)
-        {
-            _skyhookProxy = skyhookProxy;
-        }
-
         public virtual IList<Movie> ParseResponse(NetImportResponse importResponse)
         {
             var movies = new List<Movie>();
@@ -27,7 +20,7 @@ namespace NzbDrone.Core.NetImport.TMDb
                 return movies;
             }
 
-            var jsonResponse = JsonConvert.DeserializeObject<MovieSearchRoot>(importResponse.Content);
+            var jsonResponse = JsonConvert.DeserializeObject<MovieSearchResource>(importResponse.Content);
 
             // no movies were return
             if (jsonResponse == null)
@@ -35,7 +28,39 @@ namespace NzbDrone.Core.NetImport.TMDb
                 return movies;
             }
 
-            return jsonResponse.results.SelectList(_skyhookProxy.MapMovie);
+            return jsonResponse.Results.SelectList(MapListMovie);
+        }
+
+        protected Movie MapListMovie(MovieResultResource movieResult)
+        {
+            var movie =  new Movie
+            {
+                TmdbId = movieResult.Id,
+                Overview = movieResult.Overview,
+                Title = movieResult.OriginalTitle,
+                SortTitle = Parser.Parser.NormalizeTitle(movieResult.OriginalTitle),
+                Images = new List<MediaCover.MediaCover>()
+            };
+
+            if (movieResult.ReleaseDate.IsNotNullOrWhiteSpace())
+            {
+                DateTime.TryParse(movieResult.ReleaseDate, out var releaseDate);
+                movie.Year = releaseDate.Year;
+            }
+
+            movie.Images.AddIfNotNull(MapPosterImage(movieResult.PosterPath));
+
+            return movie;
+        }
+
+        private MediaCover.MediaCover MapPosterImage(string path)
+        {
+            if (path.IsNotNullOrWhiteSpace())
+            {
+                return new MediaCover.MediaCover(MediaCoverTypes.Poster, $"https://image.tmdb.org/t/p/original{path}");
+            }
+
+            return null;
         }
 
         protected virtual bool PreProcess(NetImportResponse listResponse)

@@ -1,16 +1,17 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import FieldSet from 'Components/FieldSet';
-import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import PageContent from 'Components/Page/PageContent';
+import PageContentBody from 'Components/Page/PageContentBody';
+import { inputTypes, sizes } from 'Helpers/Props';
 import RootFoldersConnector from 'RootFolder/RootFoldersConnector';
+import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
+import translate from 'Utilities/String/translate';
 import NamingConnector from './Naming/NamingConnector';
 import AddRootFolderConnector from './RootFolder/AddRootFolderConnector';
 
@@ -52,7 +53,7 @@ class MediaManagement extends Component {
           onSavePress={onSavePress}
         />
 
-        <PageContentBodyConnector>
+        <PageContentBody>
           <NamingConnector />
 
           {
@@ -87,6 +88,7 @@ class MediaManagement extends Component {
 
                         <FormInputGroup
                           type={inputTypes.CHECK}
+                          isDisabled={settings.deleteEmptyFolders.value && !settings.createEmptyMovieFolders.value}
                           name="createEmptyMovieFolders"
                           helpText="Create missing movie folders during disk scan"
                           onChange={onInputChange}
@@ -103,6 +105,7 @@ class MediaManagement extends Component {
 
                         <FormInputGroup
                           type={inputTypes.CHECK}
+                          isDisabled={settings.createEmptyMovieFolders.value && !settings.deleteEmptyFolders.value}
                           name="deleteEmptyFolders"
                           helpText="Delete empty movie folders during disk scan and when movie files are deleted"
                           onChange={onInputChange}
@@ -206,7 +209,7 @@ class MediaManagement extends Component {
                 }
 
                 <FieldSet
-                  legend="File Management"
+                  legend={translate('FileManagement')}
                 >
                   <FormGroup size={sizes.MEDIUM}>
                     <FormLabel>Ignore Deleted Movies</FormLabel>
@@ -333,7 +336,7 @@ class MediaManagement extends Component {
                         <FormInputGroup
                           type={inputTypes.CHECK}
                           name="setPermissionsLinux"
-                          helpText="Should chmod/chown be run when files are imported/renamed?"
+                          helpText="Should chmod be run when files are imported/renamed?"
                           helpTextWarning="If you're unsure what these settings do, do not alter them."
                           onChange={onInputChange}
                           {...settings.setPermissionsLinux}
@@ -349,57 +352,12 @@ class MediaManagement extends Component {
                         <FormInputGroup
                           type={inputTypes.TEXT}
                           name="fileChmod"
-                          helpText="Octal, applied to media files when imported/renamed by Radarr"
+                          helpTexts={[
+                            'Octal, applied to media files when imported/renamed by Radarr',
+                            'The same mode is applied to movie/sub folders with the execute bit added, e.g., 0644 becomes 0755'
+                          ]}
                           onChange={onInputChange}
                           {...settings.fileChmod}
-                        />
-                      </FormGroup>
-
-                      <FormGroup
-                        advancedSettings={advancedSettings}
-                        isAdvanced={true}
-                      >
-                        <FormLabel>Folder chmod mode</FormLabel>
-
-                        <FormInputGroup
-                          type={inputTypes.TEXT}
-                          name="folderChmod"
-                          helpText="Octal, applied to movie folders created by Radarr"
-                          values={fileDateOptions}
-                          onChange={onInputChange}
-                          {...settings.folderChmod}
-                        />
-                      </FormGroup>
-
-                      <FormGroup
-                        advancedSettings={advancedSettings}
-                        isAdvanced={true}
-                      >
-                        <FormLabel>chown User</FormLabel>
-
-                        <FormInputGroup
-                          type={inputTypes.TEXT}
-                          name="chownUser"
-                          helpText="Username or uid. Use uid for remote file systems."
-                          values={fileDateOptions}
-                          onChange={onInputChange}
-                          {...settings.chownUser}
-                        />
-                      </FormGroup>
-
-                      <FormGroup
-                        advancedSettings={advancedSettings}
-                        isAdvanced={true}
-                      >
-                        <FormLabel>chown Group</FormLabel>
-
-                        <FormInputGroup
-                          type={inputTypes.TEXT}
-                          name="chownGroup"
-                          helpText="Group name or gid. Use gid for remote file systems."
-                          values={fileDateOptions}
-                          onChange={onInputChange}
-                          {...settings.chownGroup}
                         />
                       </FormGroup>
                     </FieldSet>
@@ -407,11 +365,11 @@ class MediaManagement extends Component {
               </Form>
           }
 
-          <FieldSet legend="Root Folders">
+          <FieldSet legend={translate('RootFolders')}>
             <RootFoldersConnector />
             <AddRootFolderConnector />
           </FieldSet>
-        </PageContentBodyConnector>
+        </PageContentBody>
       </PageContent>
     );
   }

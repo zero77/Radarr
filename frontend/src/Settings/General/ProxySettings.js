@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import { inputTypes, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 
 function ProxySettings(props) {
   const {
@@ -30,7 +31,7 @@ function ProxySettings(props) {
   ];
 
   return (
-    <FieldSet legend="Proxy">
+    <FieldSet legend={translate('Proxy')}>
       <FormGroup size={sizes.MEDIUM}>
         <FormLabel>Use Proxy</FormLabel>
 

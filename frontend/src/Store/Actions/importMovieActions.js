@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import { createAction } from 'redux-actions';
 import { batchActions } from 'redux-batched-actions';
+import { createThunk, handleThunks } from 'Store/thunks';
 import createAjaxRequest from 'Utilities/createAjaxRequest';
+import getNewMovie from 'Utilities/Movie/getNewMovie';
 import getSectionState from 'Utilities/State/getSectionState';
 import updateSectionState from 'Utilities/State/updateSectionState';
-import getNewMovie from 'Utilities/Movie/getNewMovie';
-import { createThunk, handleThunks } from 'Store/thunks';
+import { removeItem, set, updateItem } from './baseActions';
 import createHandleActions from './Creators/createHandleActions';
-import { set, removeItem, updateItem } from './baseActions';
 import { fetchRootFolders } from './rootFolderActions';
 
 //
@@ -187,12 +187,12 @@ export const actionHandlers = handleThunks({
     const addedIds = [];
 
     const allNewMovies = ids.reduce((acc, id) => {
-      const item = _.find(items, { id });
+      const item = items.find((i) => i.id === id);
       const selectedMovie = item.selectedMovie;
 
       // Make sure we have a selected movie and
       // the same movie hasn't been added yet.
-      if (selectedMovie && !_.some(acc, { tmdbId: selectedMovie.tmdbId })) {
+      if (selectedMovie && !acc.some((a) => a.tmdbId === selectedMovie.tmdbId)) {
         const newMovie = getNewMovie(_.cloneDeep(selectedMovie), item);
         newMovie.path = item.path;
 
@@ -268,7 +268,7 @@ export const reducers = createHandleActions({
   [SET_IMPORT_MOVIE_VALUE]: function(state, { payload }) {
     const newState = getSectionState(state, section);
     const items = newState.items;
-    const index = _.findIndex(items, { id: payload.id });
+    const index = items.findIndex((item) => item.id === payload.id);
 
     newState.items = [...items];
 

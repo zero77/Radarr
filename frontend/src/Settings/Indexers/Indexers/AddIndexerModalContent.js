@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { kinds } from 'Helpers/Props';
 import Alert from 'Components/Alert';
-import Button from 'Components/Link/Button';
 import FieldSet from 'Components/FieldSet';
+import Button from 'Components/Link/Button';
 import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { kinds } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import AddIndexerItem from './AddIndexerItem';
 import styles from './AddIndexerModalContent.css';
 
@@ -51,7 +52,7 @@ class AddIndexerModalContent extends Component {
 
                 <Alert kind={kinds.INFO}>
                   <div>Radarr supports any indexer that uses the Newznab standard, as well as other indexers listed below.</div>
-                  <div>For more information on the individual indexers, clink on the info buttons.</div>
+                  <div>For more information on the individual indexers, click on the info buttons.</div>
                 </Alert>
 
                 <FieldSet legend="Usenet">
@@ -94,7 +95,7 @@ class AddIndexerModalContent extends Component {
           <Button
             onPress={onModalClose}
           >
-            Close
+            {translate('Close')}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -20,19 +20,21 @@ namespace NzbDrone.Api.Movies
     public class MovieModule : RadarrRestModuleWithSignalR<MovieResource, Movie>,
                                 IHandle<MovieImportedEvent>,
                                 IHandle<MovieFileDeletedEvent>,
+                                IHandle<MoviesDeletedEvent>,
                                 IHandle<MovieUpdatedEvent>,
                                 IHandle<MovieEditedEvent>,
-                                IHandle<MovieDeletedEvent>,
                                 IHandle<MovieRenamedEvent>,
                                 IHandle<MediaCoversUpdatedEvent>
     {
         private const string TITLE_SLUG_ROUTE = "/titleslug/(?<slug>[^/]+)";
 
-        protected readonly IMovieService _moviesService;
+        private readonly IMovieService _movieService;
+        private readonly IAddMovieService _addMovieService;
         private readonly IMapCoversToLocal _coverMapper;
 
         public MovieModule(IBroadcastSignalRMessage signalRBroadcaster,
-                           IMovieService moviesService,
+                           IMovieService movieService,
+                           IAddMovieService addMovieService,
                            IMapCoversToLocal coverMapper,
                            RootFolderValidator rootFolderValidator,
                            MappedNetworkDriveValidator mappedNetworkDriveValidator,
@@ -43,7 +45,8 @@ namespace NzbDrone.Api.Movies
                            ProfileExistsValidator profileExistsValidator)
         : base(signalRBroadcaster)
         {
-            _moviesService = moviesService;
+            _movieService = movieService;
+            _addMovieService = addMovieService;
 
             _coverMapper = coverMapper;
 
@@ -80,7 +83,7 @@ namespace NzbDrone.Api.Movies
 
         private MovieResource GetMovie(int id)
         {
-            var movies = _moviesService.GetMovie(id);
+            var movies = _movieService.GetMovie(id);
             return MapToResource(movies);
         }
 
@@ -99,7 +102,7 @@ namespace NzbDrone.Api.Movies
 
         private List<MovieResource> AllMovie()
         {
-            var moviesResources = _moviesService.GetAllMovies().ToResource();
+            var moviesResources = _movieService.GetAllMovies().ToResource();
 
             MapCoversToLocal(moviesResources.ToArray());
 
@@ -110,14 +113,14 @@ namespace NzbDrone.Api.Movies
         {
             var model = moviesResource.ToModel();
 
-            return _moviesService.AddMovie(model).Id;
+            return _addMovieService.AddMovie(model).Id;
         }
 
         private void UpdateMovie(MovieResource moviesResource)
         {
-            var model = moviesResource.ToModel(_moviesService.GetMovie(moviesResource.Id));
+            var model = moviesResource.ToModel(_movieService.GetMovie(moviesResource.Id));
 
-            _moviesService.UpdateMovie(model);
+            _movieService.UpdateMovie(model);
 
             BroadcastResourceChange(ModelAction.Updated, moviesResource);
         }
@@ -139,7 +142,7 @@ namespace NzbDrone.Api.Movies
                 addExclusion = Convert.ToBoolean(addExclusionQuery.Value);
             }
 
-            _moviesService.DeleteMovie(id, deleteFiles, addExclusion);
+            _movieService.DeleteMovie(id, deleteFiles, addExclusion);
         }
 
         private void MapCoversToLocal(params MovieResource[] movies)
@@ -165,6 +168,14 @@ namespace NzbDrone.Api.Movies
             BroadcastResourceChange(ModelAction.Updated, message.MovieFile.MovieId);
         }
 
+        public void Handle(MoviesDeletedEvent message)
+        {
+            foreach (var movie in message.Movies)
+            {
+                BroadcastResourceChange(ModelAction.Deleted, movie.Id);
+            }
+        }
+
         public void Handle(MovieUpdatedEvent message)
         {
             BroadcastResourceChange(ModelAction.Updated, message.Movie.Id);
@@ -173,11 +184,6 @@ namespace NzbDrone.Api.Movies
         public void Handle(MovieEditedEvent message)
         {
             BroadcastResourceChange(ModelAction.Updated, message.Movie.Id);
-        }
-
-        public void Handle(MovieDeletedEvent message)
-        {
-            BroadcastResourceChange(ModelAction.Deleted, message.Movie.ToResource());
         }
 
         public void Handle(MovieRenamedEvent message)

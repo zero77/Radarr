@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
-import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
+import * as commandNames from 'Commands/commandNames';
 import withCurrentPage from 'Components/withCurrentPage';
-import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
 import { executeCommand } from 'Store/Actions/commandActions';
 import * as queueActions from 'Store/Actions/queueActions';
-import * as commandNames from 'Commands/commandNames';
+import createCommandExecutingSelector from 'Store/Selectors/createCommandExecutingSelector';
+import { registerPagePopulator, unregisterPagePopulator } from 'Utilities/pagePopulator';
 import Queue from './Queue';
 
 function createMapStateToProps() {
@@ -15,13 +15,13 @@ function createMapStateToProps() {
     (state) => state.movies,
     (state) => state.queue.options,
     (state) => state.queue.paged,
-    createCommandExecutingSelector(commandNames.CHECK_FOR_FINISHED_DOWNLOAD),
-    (movies, options, queue, isCheckForFinishedDownloadExecuting) => {
+    createCommandExecutingSelector(commandNames.REFRESH_MONITORED_DOWNLOADS),
+    (movies, options, queue, isRefreshMonitoredDownloadsExecuting) => {
       return {
         isMoviesFetching: movies.isFetching,
         isMoviesPopulated: movies.isPopulated,
         moviesError: movies.error,
-        isCheckForFinishedDownloadExecuting,
+        isRefreshMonitoredDownloadsExecuting,
         ...options,
         ...queue
       };
@@ -113,7 +113,7 @@ class QueueConnector extends Component {
 
   onRefreshPress = () => {
     this.props.executeCommand({
-      name: commandNames.CHECK_FOR_FINISHED_DOWNLOAD
+      name: commandNames.REFRESH_MONITORED_DOWNLOADS
     });
   }
 
@@ -121,8 +121,8 @@ class QueueConnector extends Component {
     this.props.grabQueueItems({ ids });
   }
 
-  onRemoveSelectedPress = (ids, blacklist) => {
-    this.props.removeQueueItems({ ids, blacklist });
+  onRemoveSelectedPress = (payload) => {
+    this.props.removeQueueItems(payload);
   }
 
   //

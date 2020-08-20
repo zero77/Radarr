@@ -72,7 +72,7 @@ namespace NzbDrone.Core.Download.Clients.Transmission
                 item.Category = Settings.MovieCategory;
                 item.Title = torrent.Name;
 
-                item.DownloadClient = Definition.Name;
+                item.DownloadClientInfo = DownloadClientItemClientInfo.FromDownloadClient(this);
 
                 item.OutputPath = GetOutputPath(outputPath, torrent);
                 item.TotalSize = torrent.TotalSize;
@@ -166,12 +166,20 @@ namespace NzbDrone.Core.Download.Clients.Transmission
 
         public override DownloadClientInfo GetStatus()
         {
-            var config = _proxy.GetConfig(Settings);
-            var destDir = config.DownloadDir;
-
-            if (Settings.MovieCategory.IsNotNullOrWhiteSpace())
+            string destDir;
+            if (Settings.MovieDirectory.IsNotNullOrWhiteSpace())
             {
-                destDir = string.Format("{0}/.{1}", destDir, Settings.MovieCategory);
+                destDir = Settings.MovieDirectory;
+            }
+            else
+            {
+                var config = _proxy.GetConfig(Settings);
+                destDir = config.DownloadDir;
+
+                if (Settings.MovieCategory.IsNotNullOrWhiteSpace())
+                {
+                    destDir = string.Format("{0}/{1}", destDir, Settings.MovieCategory);
+                }
             }
 
             return new DownloadClientInfo

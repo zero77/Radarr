@@ -1,15 +1,16 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { sizes } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
-import Button from 'Components/Link/Button';
 import SelectInput from 'Components/Form/SelectInput';
 import TextInput from 'Components/Form/TextInput';
+import Button from 'Components/Link/Button';
 import Modal from 'Components/Modal/Modal';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import { sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import NamingOption from './NamingOption';
 import styles from './NamingModal.css';
 
@@ -116,8 +117,10 @@ class NamingModal extends Component {
     const movieTokens = [
       { token: '{Movie Title}', example: 'Movie Title!' },
       { token: '{Movie CleanTitle}', example: 'Movie Title' },
-      { token: '{Movie TitleThe}', example: 'Movie Title, The' }
-
+      { token: '{Movie TitleThe}', example: 'Movie Title, The' },
+      { token: '{Movie TitleFirstCharacter}', example: 'M' },
+      { token: '{Movie Certification}', example: 'R' },
+      { token: '{Release Year}', example: '2009' }
     ];
 
     const movieIdTokens = [
@@ -352,7 +355,7 @@ class NamingModal extends Component {
                     </div>
                   </FieldSet>
 
-                  <FieldSet legend="Custom Formats">
+                  <FieldSet legend={translate('CustomFormats')}>
                     <div className={styles.groups}>
                       {
                         customFormatTokens.map(({ token, example }) => {
@@ -408,7 +411,7 @@ class NamingModal extends Component {
               onSelectionChange={this.onInputSelectionChange}
             />
             <Button onPress={onModalClose}>
-              Close
+              {translate('Close')}
             </Button>
           </ModalFooter>
         </ModalContent>

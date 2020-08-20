@@ -97,7 +97,7 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
                 var item = new DownloadClientItem()
                 {
                     Category = Settings.TvCategory,
-                    DownloadClient = Definition.Name,
+                    DownloadClientInfo = DownloadClientItemClientInfo.FromDownloadClient(this),
                     DownloadId = CreateDownloadId(nzb.Id, serialNumber),
                     Title = nzb.Title,
                     TotalSize = nzb.Size,
@@ -139,12 +139,15 @@ namespace NzbDrone.Core.Download.Clients.DownloadStation
         {
             try
             {
-                var path = GetDownloadDirectory();
+                var serialNumber = _serialNumberProvider.GetSerialNumber(Settings);
+                var sharedFolder = GetDownloadDirectory() ?? GetDefaultDir();
+                var outputPath = new OsPath($"/{sharedFolder.TrimStart('/')}");
+                var path = _sharedFolderResolver.RemapToFullPath(outputPath, Settings, serialNumber);
 
                 return new DownloadClientInfo
                 {
                     IsLocalhost = Settings.Host == "127.0.0.1" || Settings.Host == "localhost",
-                    OutputRootFolders = new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, new OsPath(path)) }
+                    OutputRootFolders = new List<OsPath> { _remotePathMappingService.RemapRemoteToLocal(Settings.Host, path) }
                 };
             }
             catch (DownloadClientException e)

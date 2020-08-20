@@ -47,28 +47,23 @@
   color: $disabledColor;
 }
 
-.tmdbLink {
-  composes: link from '~Components/Link/Link.css';
-
-  margin-top: -4px;
-  margin-left: auto;
-  color: $textColor;
-}
-
-.tmdbLinkIcon {
-  margin-left: 10px;
-}
-
 .alreadyExistsIcon {
   margin-left: 10px;
   color: #37bc9b;
+  pointer-events: all;
 }
 
 .exclusionIcon {
   margin-left: 10px;
-  color: #bc3737;
+  color: $dangerColor;
+  pointer-events: all;
 }
 
 .overview {
   margin-top: 20px;
+}
+
+.links {
+  margin-left: 8px;
+  pointer-events: all;
 }

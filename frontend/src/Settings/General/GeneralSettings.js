@@ -1,13 +1,13 @@
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { kinds } from 'Helpers/Props';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import PageContent from 'Components/Page/PageContent';
-import PageContentBodyConnector from 'Components/Page/PageContentBodyConnector';
-import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import Form from 'Components/Form/Form';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
+import PageContent from 'Components/Page/PageContent';
+import PageContentBody from 'Components/Page/PageContentBody';
+import { kinds } from 'Helpers/Props';
+import SettingsToolbarConnector from 'Settings/SettingsToolbarConnector';
 import AnalyticSettings from './AnalyticSettings';
 import BackupSettings from './BackupSettings';
 import HostSettings from './HostSettings';
@@ -105,6 +105,7 @@ class GeneralSettings extends Component {
       isWindows,
       isWindowsService,
       mode,
+      packageUpdateMechanism,
       onInputChange,
       onConfirmResetApiKey,
       ...otherProps
@@ -116,7 +117,7 @@ class GeneralSettings extends Component {
           {...otherProps}
         />
 
-        <PageContentBodyConnector>
+        <PageContentBody>
           {
             isFetching && !isPopulated &&
               <LoadingIndicator />
@@ -167,6 +168,7 @@ class GeneralSettings extends Component {
                   advancedSettings={advancedSettings}
                   settings={settings}
                   isWindows={isWindows}
+                  packageUpdateMechanism={packageUpdateMechanism}
                   onInputChange={onInputChange}
                 />
 
@@ -177,7 +179,7 @@ class GeneralSettings extends Component {
                 />
               </Form>
           }
-        </PageContentBodyConnector>
+        </PageContentBody>
 
         <ConfirmModal
           isOpen={this.state.isRestartRequiredModalOpen}
@@ -210,6 +212,7 @@ GeneralSettings.propTypes = {
   isWindows: PropTypes.bool.isRequired,
   isWindowsService: PropTypes.bool.isRequired,
   mode: PropTypes.string.isRequired,
+  packageUpdateMechanism: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired,
   onConfirmResetApiKey: PropTypes.func.isRequired,
   onConfirmRestart: PropTypes.func.isRequired

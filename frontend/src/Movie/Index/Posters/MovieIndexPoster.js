@@ -1,15 +1,18 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { icons } from 'Helpers/Props';
-import IconButton from 'Components/Link/IconButton';
 import CheckInput from 'Components/Form/CheckInput';
-import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
+import Icon from 'Components/Icon';
 import Label from 'Components/Label';
+import IconButton from 'Components/Link/IconButton';
 import Link from 'Components/Link/Link';
-import MoviePoster from 'Movie/MoviePoster';
-import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
+import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
+import Popover from 'Components/Tooltip/Popover';
+import { icons } from 'Helpers/Props';
 import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
+import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
+import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
 import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar';
+import MoviePoster from 'Movie/MoviePoster';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
 import styles from './MovieIndexPoster.css';
 
@@ -77,6 +80,9 @@ class MovieIndexPoster extends Component {
   render() {
     const {
       id,
+      tmdbId,
+      imdbId,
+      youTubeTrailerId,
       title,
       monitored,
       hasFile,
@@ -157,6 +163,25 @@ class MovieIndexPoster extends Component {
               title="Edit movie"
               onPress={this.onEditMoviePress}
             />
+
+            <span className={styles.externalLinks}>
+              <Popover
+                anchor={
+                  <Icon
+                    name={icons.EXTERNAL_LINK}
+                    size={12}
+                  />
+                }
+                title="Links"
+                body={
+                  <MovieDetailsLinks
+                    tmdbId={tmdbId}
+                    imdbId={imdbId}
+                    youTubeTrailerId={youTubeTrailerId}
+                  />
+                }
+              />
+            </span>
           </Label>
 
           {
@@ -272,7 +297,10 @@ MovieIndexPoster.propTypes = {
   onSearchPress: PropTypes.func.isRequired,
   isMovieEditorActive: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool,
-  onSelectedChange: PropTypes.func.isRequired
+  onSelectedChange: PropTypes.func.isRequired,
+  tmdbId: PropTypes.number.isRequired,
+  imdbId: PropTypes.string,
+  youTubeTrailerId: PropTypes.string
 };
 
 MovieIndexPoster.defaultProps = {

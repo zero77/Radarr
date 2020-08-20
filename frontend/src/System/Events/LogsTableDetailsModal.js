@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { scrollDirections } from 'Helpers/Props';
 import Button from 'Components/Link/Button';
-import Scroller from 'Components/Scroller/Scroller';
 import Modal from 'Components/Modal/Modal';
-import ModalContent from 'Components/Modal/ModalContent';
-import ModalHeader from 'Components/Modal/ModalHeader';
 import ModalBody from 'Components/Modal/ModalBody';
+import ModalContent from 'Components/Modal/ModalContent';
 import ModalFooter from 'Components/Modal/ModalFooter';
+import ModalHeader from 'Components/Modal/ModalHeader';
+import Scroller from 'Components/Scroller/Scroller';
+import { scrollDirections } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import styles from './LogsTableDetailsModal.css';
 
 function LogsTableDetailsModal(props) {
@@ -56,7 +57,7 @@ function LogsTableDetailsModal(props) {
 
         <ModalFooter>
           <Button onPress={onModalClose}>
-            Close
+            {translate('Close')}
           </Button>
         </ModalFooter>
       </ModalContent>

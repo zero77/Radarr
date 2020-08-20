@@ -1,13 +1,14 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
-import FormInputButton from 'Components/Form/FormInputButton';
 import FieldSet from 'Components/FieldSet';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
+import FormInputButton from 'Components/Form/FormInputButton';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import { inputTypes, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 import NamingModal from './NamingModal';
 import styles from './Naming.css';
 
@@ -101,7 +102,7 @@ class Naming extends Component {
     }
 
     return (
-      <FieldSet legend="Movie Naming">
+      <FieldSet legend={translate('MovieNaming')}>
         {
           isFetching &&
             <LoadingIndicator />
@@ -133,7 +134,7 @@ class Naming extends Component {
                 <FormInputGroup
                   type={inputTypes.CHECK}
                   name="replaceIllegalCharacters"
-                  helpText="Replace or Remove illegal characters"
+                  helpText="Replace illegal characters. If unchecked, Radarr will remove them instead"
                   onChange={onInputChange}
                   {...settings.replaceIllegalCharacters}
                 />

@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import { inputTypes, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 
 function AnalyticSettings(props) {
   const {
@@ -17,7 +18,7 @@ function AnalyticSettings(props) {
   } = settings;
 
   return (
-    <FieldSet legend="Analytics">
+    <FieldSet legend={translate('Analytics')}>
       <FormGroup size={sizes.MEDIUM}>
         <FormLabel>Send Anonymous Usage Data</FormLabel>
 

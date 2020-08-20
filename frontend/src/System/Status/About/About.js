@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import titleCase from 'Utilities/String/titleCase';
-import FieldSet from 'Components/FieldSet';
 import DescriptionList from 'Components/DescriptionList/DescriptionList';
 import DescriptionListItem from 'Components/DescriptionList/DescriptionListItem';
+import FieldSet from 'Components/FieldSet';
+import InlineMarkdown from 'Components/Markdown/InlineMarkdown';
+import titleCase from 'Utilities/String/titleCase';
+import translate from 'Utilities/String/translate';
 import StartTime from './StartTime';
 import styles from './About.css';
 
@@ -15,6 +17,8 @@ class About extends Component {
   render() {
     const {
       version,
+      packageVersion,
+      packageAuthor,
       isNetCore,
       isMono,
       isDocker,
@@ -29,12 +33,20 @@ class About extends Component {
     } = this.props;
 
     return (
-      <FieldSet legend="About">
+      <FieldSet legend={translate('About')}>
         <DescriptionList className={styles.descriptionList}>
           <DescriptionListItem
             title="Version"
             data={version}
           />
+
+          {
+            packageVersion &&
+              <DescriptionListItem
+                title="Package Version"
+                data={(packageAuthor ? <span> {packageVersion} {' by '} <InlineMarkdown data={packageAuthor} /> </span> : packageVersion)}
+              />
+          }
 
           {
             isMono &&
@@ -99,6 +111,8 @@ class About extends Component {
 
 About.propTypes = {
   version: PropTypes.string.isRequired,
+  packageVersion: PropTypes.string,
+  packageAuthor: PropTypes.string,
   isNetCore: PropTypes.bool.isRequired,
   isMono: PropTypes.bool.isRequired,
   runtimeVersion: PropTypes.string.isRequired,

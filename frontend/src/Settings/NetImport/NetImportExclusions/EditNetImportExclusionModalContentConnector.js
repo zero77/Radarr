@@ -3,13 +3,14 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
+import { saveNetImportExclusion, setNetImportExclusionValue } from 'Store/Actions/settingsActions';
 import selectSettings from 'Store/Selectors/selectSettings';
-import { setNetImportExclusionValue, saveNetImportExclusion } from 'Store/Actions/settingsActions';
 import EditNetImportExclusionModalContent from './EditNetImportExclusionModalContent';
 
 const newNetImportExclusion = {
-  artistName: '',
-  foreignId: ''
+  movieTitle: '',
+  tmdbId: 0,
+  movieYear: 0
 };
 
 function createNetImportExclusionSelector() {

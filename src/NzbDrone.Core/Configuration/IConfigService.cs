@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NzbDrone.Common.Http.Proxy;
 using NzbDrone.Core.MediaFiles;
-using NzbDrone.Core.Parser;
+using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Security;
 
 namespace NzbDrone.Core.Configuration
@@ -44,9 +44,6 @@ namespace NzbDrone.Core.Configuration
         //Permissions (Media Management)
         bool SetPermissionsLinux { get; set; }
         string FileChmod { get; set; }
-        string FolderChmod { get; set; }
-        string ChownUser { get; set; }
-        string ChownGroup { get; set; }
 
         //Indexers
         int Retention { get; set; }
@@ -60,11 +57,13 @@ namespace NzbDrone.Core.Configuration
 
         bool AllowHardcodedSubs { get; set; }
         string WhitelistedHardcodedSubs { get; set; }
-        ParsingLeniencyType ParsingLeniency { get; set; }
 
         int NetImportSyncInterval { get; set; }
         string ListSyncLevel { get; set; }
         string ImportExclusions { get; set; }
+
+        //Metadata Provider
+        TMDbCountryCode CertificationCountry { get; set; }
 
         //UI
         int FirstDayOfWeek { get; set; }
@@ -75,6 +74,7 @@ namespace NzbDrone.Core.Configuration
         string TimeFormat { get; set; }
         bool ShowRelativeDates { get; set; }
         bool EnableColorImpairedMode { get; set; }
+        int MovieInfoLanguage { get; set; }
 
         //Internal
         bool CleanupMetadataImages { get; set; }

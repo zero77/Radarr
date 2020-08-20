@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -39,8 +39,8 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
             _creditService = creditService;
         }
 
-        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|landscape|logo|backdrop|clearlogo)\.(?:png|jpg)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpg)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex MovieImagesRegex = new Regex(@"^(?<type>poster|banner|fanart|clearart|discart|landscape|logo|backdrop|clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex MovieFileImageRegex = new Regex(@"(?<type>-thumb|-poster|-banner|-fanart|-clearart|-discart|-landscape|-logo|-backdrop|-clearlogo)\.(?:png|jpe?g)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public override string Name => "Kodi (XBMC) / Emby";
 
@@ -93,7 +93,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                 return metadata;
             }
 
-            var parseResult = Parser.Parser.ParseMovieTitle(filename, false);
+            var parseResult = Parser.Parser.ParseMovieTitle(filename);
 
             if (parseResult != null &&
                 Path.GetExtension(filename).Equals(".nfo", StringComparison.OrdinalIgnoreCase) &&
@@ -137,6 +137,7 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
 
                     details.Add(new XElement("plot", movie.Overview));
                     details.Add(new XElement("id", movie.ImdbId));
+                    details.Add(new XElement("tmdbid", movie.TmdbId));
 
                     if (movie.ImdbId.IsNotNullOrWhiteSpace())
                     {
@@ -149,6 +150,11 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                     var uniqueId = new XElement("uniqueid", movie.TmdbId);
                     uniqueId.SetAttributeValue("type", "tmdb");
                     details.Add(uniqueId);
+
+                    if (movie.Certification.IsNotNullOrWhiteSpace())
+                    {
+                        details.Add(new XElement("mpaa", movie.Certification));
+                    }
 
                     details.Add(new XElement("year", movie.Year));
 
@@ -164,6 +170,15 @@ namespace NzbDrone.Core.Extras.Metadata.Consumers.Xbmc
                         setElement.Add(new XElement("name", movie.Collection.Name));
 
                         details.Add(setElement);
+                    }
+
+                    if (movie.Collection?.TmdbId > 0)
+                    {
+                        details.Add(new XElement("tmdbCollectionId", movie.Collection.TmdbId));
+
+                        var uniqueSetId = new XElement("uniqueid", movie.Collection.TmdbId);
+                        uniqueSetId.SetAttributeValue("type", "tmdbSet");
+                        details.Add(uniqueSetId);
                     }
 
                     foreach (var genre in movie.Genres)

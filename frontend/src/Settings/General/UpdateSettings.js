@@ -1,16 +1,19 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import { inputTypes, sizes } from 'Helpers/Props';
+import titleCase from 'Utilities/String/titleCase';
+import translate from 'Utilities/String/translate';
 
 function UpdateSettings(props) {
   const {
     advancedSettings,
     settings,
     isWindows,
+    packageUpdateMechanism,
     onInputChange
   } = props;
 
@@ -25,13 +28,23 @@ function UpdateSettings(props) {
     return null;
   }
 
-  const updateOptions = [
-    { key: 'builtIn', value: 'Built-In' },
-    { key: 'script', value: 'Script' }
-  ];
+  const usingExternalUpdateMechanism = packageUpdateMechanism !== 'builtIn';
+
+  const updateOptions = [];
+
+  if (usingExternalUpdateMechanism) {
+    updateOptions.push({
+      key: packageUpdateMechanism,
+      value: titleCase(packageUpdateMechanism)
+    });
+  } else {
+    updateOptions.push({ key: 'builtIn', value: 'Built-In' });
+  }
+
+  updateOptions.push({ key: 'script', value: 'Script' });
 
   return (
-    <FieldSet legend="Updates">
+    <FieldSet legend={translate('Updates')}>
       <FormGroup
         advancedSettings={advancedSettings}
         isAdvanced={true}
@@ -41,10 +54,11 @@ function UpdateSettings(props) {
         <FormInputGroup
           type={inputTypes.TEXT}
           name="branch"
-          helpText="Branch to use to update Radarr"
+          helpText={usingExternalUpdateMechanism ? 'Branch used by external update mechanism' : 'Branch to use to update Radarr'}
           helpLink="https://github.com/Radarr/Radarr/wiki/Release-Branches"
-          onChange={onInputChange}
           {...branch}
+          onChange={onInputChange}
+          readOnly={usingExternalUpdateMechanism}
         />
       </FormGroup>
 
@@ -111,6 +125,7 @@ UpdateSettings.propTypes = {
   advancedSettings: PropTypes.bool.isRequired,
   settings: PropTypes.object.isRequired,
   isWindows: PropTypes.bool.isRequired,
+  packageUpdateMechanism: PropTypes.string.isRequired,
   onInputChange: PropTypes.func.isRequired
 };
 

@@ -1,8 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
-using Newtonsoft.Json;
 using NUnit.Framework;
-using NzbDrone.Common.Http;
 using NzbDrone.Core.Indexers.FileList;
 using NzbDrone.Core.IndexerSearch.Definitions;
 using NzbDrone.Core.Test.Framework;
@@ -26,7 +25,8 @@ namespace NzbDrone.Core.Test.IndexerTests.FileListTests
 
             _movieSearchCriteria = new MovieSearchCriteria
             {
-                Movie = new Movies.Movie { ImdbId = "tt0076759", Title = "Star Wars", Year = 1977 }
+                Movie = new Movies.Movie { ImdbId = "tt0076759", Title = "Star Wars", Year = 1977 },
+                SceneTitles = new List<string> { "Star Wars" }
             };
         }
 
@@ -72,7 +72,7 @@ namespace NzbDrone.Core.Test.IndexerTests.FileListTests
             var page = results.GetAllTiers().First().First();
 
             page.Url.Query.Should().Contain("type=name");
-            page.Url.Query.Should().Contain("query=Star Wars 1977");
+            page.Url.Query.Should().Contain("query=Star+Wars+1977");
         }
     }
 }

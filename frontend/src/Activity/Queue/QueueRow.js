@@ -1,23 +1,23 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import formatBytes from 'Utilities/Number/formatBytes';
-import { icons, kinds } from 'Helpers/Props';
+import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
 import IconButton from 'Components/Link/IconButton';
 import SpinnerIconButton from 'Components/Link/SpinnerIconButton';
 import ProgressBar from 'Components/ProgressBar';
-import TableRow from 'Components/Table/TableRow';
 // import RelativeDateCellConnector from 'Components/Table/Cells/RelativeDateCellConnector';
 import TableRowCell from 'Components/Table/Cells/TableRowCell';
 import TableSelectCell from 'Components/Table/Cells/TableSelectCell';
-import ProtocolLabel from 'Activity/Queue/ProtocolLabel';
-import MovieQuality from 'Movie/MovieQuality';
+import TableRow from 'Components/Table/TableRow';
+import { icons, kinds } from 'Helpers/Props';
+import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
 import MovieFormats from 'Movie/MovieFormats';
 import MovieLanguage from 'Movie/MovieLanguage';
-import InteractiveImportModal from 'InteractiveImport/InteractiveImportModal';
+import MovieQuality from 'Movie/MovieQuality';
 import MovieTitleLink from 'Movie/MovieTitleLink';
+import formatBytes from 'Utilities/Number/formatBytes';
 import QueueStatusCell from './QueueStatusCell';
-import TimeleftCell from './TimeleftCell';
 import RemoveQueueItemModal from './RemoveQueueItemModal';
+import TimeleftCell from './TimeleftCell';
 import styles from './QueueRow.css';
 
 class QueueRow extends Component {
@@ -68,6 +68,7 @@ class QueueRow extends Component {
       title,
       status,
       trackedDownloadStatus,
+      trackedDownloadState,
       statusMessages,
       errorMessage,
       movie,
@@ -100,8 +101,8 @@ class QueueRow extends Component {
     } = this.state;
 
     const progress = 100 - (sizeleft / size * 100);
-    const showInteractiveImport = status === 'Completed' && trackedDownloadStatus === 'Warning';
-    const isPending = status === 'Delay' || status === 'DownloadClientUnavailable';
+    const showInteractiveImport = status === 'completed' && trackedDownloadStatus === 'warning';
+    const isPending = status === 'delay' || status === 'downloadClientUnavailable';
 
     return (
       <TableRow>
@@ -129,6 +130,7 @@ class QueueRow extends Component {
                   sourceTitle={title}
                   status={status}
                   trackedDownloadStatus={trackedDownloadStatus}
+                  trackedDownloadState={trackedDownloadState}
                   statusMessages={statusMessages}
                   errorMessage={errorMessage}
                 />
@@ -315,6 +317,7 @@ class QueueRow extends Component {
         <RemoveQueueItemModal
           isOpen={isRemoveQueueItemModalOpen}
           sourceTitle={title}
+          canIgnore={!!movie}
           onRemovePress={this.onRemoveQueueItemModalConfirmed}
           onModalClose={this.onRemoveQueueItemModalClose}
         />
@@ -330,6 +333,7 @@ QueueRow.propTypes = {
   title: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired,
   trackedDownloadStatus: PropTypes.string,
+  trackedDownloadState: PropTypes.string,
   statusMessages: PropTypes.arrayOf(PropTypes.object),
   errorMessage: PropTypes.string,
   movie: PropTypes.object,

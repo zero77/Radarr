@@ -5,6 +5,7 @@ using NzbDrone.Core.Configuration;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Parser.Model;
 using NzbDrone.Core.Profiles.Delay;
+using NzbDrone.Core.Qualities;
 
 namespace NzbDrone.Core.DecisionEngine
 {
@@ -12,14 +13,16 @@ namespace NzbDrone.Core.DecisionEngine
     {
         private readonly IConfigService _configService;
         private readonly IDelayProfileService _delayProfileService;
+        private readonly IQualityDefinitionService _qualityDefinitionService;
 
         public delegate int CompareDelegate(DownloadDecision x, DownloadDecision y);
         public delegate int CompareDelegate<TSubject, TValue>(DownloadDecision x, DownloadDecision y);
 
-        public DownloadDecisionComparer(IConfigService configService, IDelayProfileService delayProfileService)
+        public DownloadDecisionComparer(IConfigService configService, IDelayProfileService delayProfileService, IQualityDefinitionService qualityDefinitionService)
         {
             _configService = configService;
             _delayProfileService = delayProfileService;
+            _qualityDefinitionService = qualityDefinitionService;
         }
 
         public int Compare(DownloadDecision x, DownloadDecision y)
@@ -28,8 +31,8 @@ namespace NzbDrone.Core.DecisionEngine
             {
                 CompareQuality,
                 ComparePreferredWords,
-                CompareIndexerFlags,
                 CompareProtocol,
+                CompareIndexerFlags,
                 ComparePeersIfTorrent,
                 CompareAgeIfUsenet,
                 CompareSize
@@ -95,10 +98,10 @@ namespace NzbDrone.Core.DecisionEngine
 
         private int CompareProtocol(DownloadDecision x, DownloadDecision y)
         {
-            var result = CompareBy(x.RemoteMovie, y.RemoteMovie, remoteEpisode =>
+            var result = CompareBy(x.RemoteMovie, y.RemoteMovie, remoteMovie =>
             {
-                var delayProfile = _delayProfileService.BestForTags(remoteEpisode.Movie.Tags);
-                var downloadProtocol = remoteEpisode.Release.DownloadProtocol;
+                var delayProfile = _delayProfileService.BestForTags(remoteMovie.Movie.Tags);
+                var downloadProtocol = remoteMovie.Release.DownloadProtocol;
                 return downloadProtocol == delayProfile.PreferredProtocol;
             });
 
@@ -116,15 +119,15 @@ namespace NzbDrone.Core.DecisionEngine
             }
 
             return CompareAll(
-                CompareBy(x.RemoteMovie, y.RemoteMovie, remoteEpisode =>
+                CompareBy(x.RemoteMovie, y.RemoteMovie, remoteMovie =>
                 {
-                    var seeders = TorrentInfo.GetSeeders(remoteEpisode.Release);
+                    var seeders = TorrentInfo.GetSeeders(remoteMovie.Release);
 
                     return seeders.HasValue && seeders.Value > 0 ? Math.Round(Math.Log10(seeders.Value)) : 0;
                 }),
-                CompareBy(x.RemoteMovie, y.RemoteMovie, remoteEpisode =>
+                CompareBy(x.RemoteMovie, y.RemoteMovie, remoteMovie =>
                 {
-                    var peers = TorrentInfo.GetPeers(remoteEpisode.Release);
+                    var peers = TorrentInfo.GetPeers(remoteMovie.Release);
 
                     return peers.HasValue && peers.Value > 0 ? Math.Round(Math.Log10(peers.Value)) : 0;
                 }));
@@ -138,10 +141,10 @@ namespace NzbDrone.Core.DecisionEngine
                 return 0;
             }
 
-            return CompareBy(x.RemoteMovie, y.RemoteMovie, remoteEpisode =>
+            return CompareBy(x.RemoteMovie, y.RemoteMovie, remoteMovie =>
             {
-                var ageHours = remoteEpisode.Release.AgeHours;
-                var age = remoteEpisode.Release.Age;
+                var ageHours = remoteMovie.Release.AgeHours;
+                var age = remoteMovie.Release.Age;
 
                 if (ageHours < 1)
                 {
@@ -164,8 +167,25 @@ namespace NzbDrone.Core.DecisionEngine
 
         private int CompareSize(DownloadDecision x, DownloadDecision y)
         {
-            // TODO: Is smaller better? Smaller for usenet could mean no par2 files.
-            return CompareBy(x.RemoteMovie, y.RemoteMovie, remoteEpisode => remoteEpisode.Release.Size.Round(200.Megabytes()));
+            var sizeCompare =  CompareBy(x.RemoteMovie, y.RemoteMovie, remoteMovie =>
+            {
+                var preferredSize = _qualityDefinitionService.Get(remoteMovie.ParsedMovieInfo.Quality.Quality).PreferredSize;
+
+                // If no value for preferred it means unlimited so fallback to sort largest is best
+                if (preferredSize.HasValue && remoteMovie.Movie.Runtime > 0)
+                {
+                    var preferredMovieSize = remoteMovie.Movie.Runtime * preferredSize.Value.Megabytes();
+
+                    // Calculate closest to the preferred size
+                    return Math.Abs((remoteMovie.Release.Size - preferredMovieSize).Round(200.Megabytes())) * (-1);
+                }
+                else
+                {
+                    return remoteMovie.Release.Size.Round(200.Megabytes());
+                }
+            });
+
+            return sizeCompare;
         }
 
         private int ScoreFlags(IndexerFlags flags)
@@ -185,9 +205,11 @@ namespace NzbDrone.Core.DecisionEngine
                         case IndexerFlags.PTP_Approved:
                         case IndexerFlags.PTP_Golden:
                         case IndexerFlags.HDB_Internal:
+                        case IndexerFlags.AHD_Internal:
                             score += 2;
                             break;
                         case IndexerFlags.G_Halfleech:
+                        case IndexerFlags.AHD_UserRelease:
                             score += 1;
                             break;
                     }

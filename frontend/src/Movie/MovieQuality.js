@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import formatBytes from 'Utilities/Number/formatBytes';
-import { kinds } from 'Helpers/Props';
 import Label from 'Components/Label';
+import { kinds } from 'Helpers/Props';
+import formatBytes from 'Utilities/Number/formatBytes';
 
 function getTooltip(title, quality, size, isMonitored, isCutoffNotMet) {
   const revision = quality.revision;
@@ -43,6 +43,10 @@ function MovieQuality(props) {
     kind = kinds.DISABLED;
   } else if (isCutoffNotMet) {
     kind = kinds.INVERSE;
+  }
+
+  if (!quality) {
+    return null;
   }
 
   return (

@@ -4,6 +4,7 @@ const livereload = require('gulp-livereload');
 const path = require('path');
 const webpack = require('webpack');
 const errorHandler = require('./helpers/errorHandler');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
@@ -13,6 +14,7 @@ const frontendFolder = path.join(__dirname, '..');
 const srcFolder = path.join(frontendFolder, 'src');
 const isProduction = process.argv.indexOf('--production') > -1;
 const isProfiling = isProduction && process.argv.indexOf('--profile') > -1;
+const inlineWebWorkers = true;
 
 const distFolder = path.resolve(frontendFolder, '..', '_output', uiFolder);
 
@@ -46,6 +48,8 @@ HtmlWebpackPlugin.prototype.injectAssetsIntoHtml = function(html, assets, assetT
 };
 
 const plugins = [
+  new OptimizeCssAssetsPlugin({}),
+
   new webpack.DefinePlugin({
     __DEV__: !isProduction,
     'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development')
@@ -121,7 +125,9 @@ const config = {
         use: {
           loader: 'worker-loader',
           options: {
-            name: '[name].js'
+            name: '[name].js',
+            inline: inlineWebWorkers,
+            fallback: !inlineWebWorkers
           }
         }
       },
@@ -251,7 +257,7 @@ gulp.task('webpack', () => {
 gulp.task('webpackWatch', () => {
   config.watch = true;
 
-  return webpackStream(config)
+  return webpackStream(config, webpack)
     .on('error', errorHandler)
     .pipe(gulp.dest('_output/UI'))
     .on('error', errorHandler)

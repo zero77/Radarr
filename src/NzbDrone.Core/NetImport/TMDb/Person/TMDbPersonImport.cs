@@ -1,4 +1,4 @@
-﻿using NLog;
+using NLog;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Http;
 using NzbDrone.Core.Configuration;
@@ -11,11 +11,12 @@ namespace NzbDrone.Core.NetImport.TMDb.Person
     {
         public TMDbPersonImport(IRadarrCloudRequestBuilder requestBuilder,
                                  IHttpClient httpClient,
+                                 INetImportStatusService netImportStatusService,
                                  IConfigService configService,
                                  IParsingService parsingService,
                                  ISearchForNewMovie searchForNewMovie,
                                  Logger logger)
-        : base(requestBuilder, httpClient, configService, parsingService, searchForNewMovie, logger)
+        : base(requestBuilder, httpClient, netImportStatusService, configService, parsingService, searchForNewMovie, logger)
         {
         }
 
@@ -25,7 +26,7 @@ namespace NzbDrone.Core.NetImport.TMDb.Person
 
         public override IParseNetImportResponse GetParser()
         {
-            return new TMDbPersonParser(Settings, _skyhookProxy);
+            return new TMDbPersonParser(Settings);
         }
 
         public override INetImportRequestGenerator GetRequestGenerator()

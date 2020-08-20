@@ -10,11 +10,13 @@ using NzbDrone.Core.CustomFilters;
 using NzbDrone.Core.CustomFormats;
 using NzbDrone.Core.Datastore.Converters;
 using NzbDrone.Core.Download;
+using NzbDrone.Core.Download.History;
 using NzbDrone.Core.Download.Pending;
 using NzbDrone.Core.Extras.Metadata;
 using NzbDrone.Core.Extras.Metadata.Files;
 using NzbDrone.Core.Extras.Others;
 using NzbDrone.Core.Extras.Subtitles;
+using NzbDrone.Core.History;
 using NzbDrone.Core.Indexers;
 using NzbDrone.Core.Instrumentation;
 using NzbDrone.Core.Jobs;
@@ -24,6 +26,7 @@ using NzbDrone.Core.Messaging.Commands;
 using NzbDrone.Core.Movies;
 using NzbDrone.Core.Movies.AlternativeTitles;
 using NzbDrone.Core.Movies.Credits;
+using NzbDrone.Core.Movies.Translations;
 using NzbDrone.Core.NetImport;
 using NzbDrone.Core.NetImport.ImportExclusions;
 using NzbDrone.Core.Notifications;
@@ -93,7 +96,7 @@ namespace NzbDrone.Core.Datastore
                   .Ignore(d => d.Protocol)
                   .Ignore(d => d.Tags);
 
-            Mapper.Entity<History.History>("History").RegisterModel();
+            Mapper.Entity<MovieHistory>("History").RegisterModel();
 
             Mapper.Entity<MovieFile>("MovieFiles").RegisterModel()
                   .Ignore(f => f.Path);
@@ -102,6 +105,8 @@ namespace NzbDrone.Core.Datastore
                   .Ignore(s => s.RootFolderPath);
 
             Mapper.Entity<AlternativeTitle>("AlternativeTitles").RegisterModel();
+
+            Mapper.Entity<MovieTranslation>("MovieTranslations").RegisterModel();
 
             Mapper.Entity<Credit>("Credits").RegisterModel();
 
@@ -135,8 +140,11 @@ namespace NzbDrone.Core.Datastore
 
             Mapper.Entity<IndexerStatus>("IndexerStatus").RegisterModel();
             Mapper.Entity<DownloadClientStatus>("DownloadClientStatus").RegisterModel();
+            Mapper.Entity<NetImportStatus>("NetImportStatus").RegisterModel();
 
             Mapper.Entity<CustomFilter>("CustomFilters").RegisterModel();
+
+            Mapper.Entity<DownloadHistory>("DownloadHistory").RegisterModel();
         }
 
         private static void RegisterMappers()

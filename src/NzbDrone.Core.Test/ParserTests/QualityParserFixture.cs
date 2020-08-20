@@ -62,15 +62,24 @@ namespace NzbDrone.Core.Test.ParserTests
             ParseAndVerifyQuality(title, Source.TV, proper, Resolution.R480p);
         }
 
-        [TestCase("The.Shield.S01E13.NTSC.x264-CtrlSD", false)]
         [TestCase("The.Girls.Next.Door.S03E06.DVDRip.XviD-WiDE", false)]
         [TestCase("The.Girls.Next.Door.S03E06.DVD.Rip.XviD-WiDE", false)]
         [TestCase("the.shield.1x13.circles.ws.xvidvd-tns", false)]
         [TestCase("the_x-files.9x18.sunshine_days.ac3.ws_dvdrip_xvid-fov.avi", false)]
         [TestCase("The.Third.Jihad.2008.DVDRip.360p.H264 iPod -20-40", false)]
+        [TestCase("SomeMovie.2018.DVDRip.ts", false)]
         public void should_parse_dvd_quality(string title, bool proper)
         {
             ParseAndVerifyQuality(title, Source.DVD, proper, Resolution.R480p);
+        }
+
+        [TestCase("Barbie.Fairytopia.Magic.of.the.Rainbow.2007.DVD5.NTSC", false)]
+        [TestCase("Barbie.Fairytopia.Magic.of.the.Rainbow.2007.DVD9.NTSC", false)]
+        [TestCase("Barbie.Fairytopia.Magic.of.the.Rainbow.2007.DVDR.NTSC", false)]
+        [TestCase("Barbie.Fairytopia.Magic.of.the.Rainbow.2007.DVD-R.NTSC", false)]
+        public void should_parse_dvdr_quality(string title, bool proper)
+        {
+            ParseAndVerifyQuality(title, Source.DVD, proper, Resolution.R480p, Modifier.REMUX);
         }
 
         [TestCase("Elementary.S01E10.The.Leviathan.480p.WEB-DL.x264-mSD", false)]
@@ -164,6 +173,9 @@ namespace NzbDrone.Core.Test.ParserTests
         [TestCase("The.Simpsons.S25E21.Pay.Pal.1080p.WEB-DL.DD5.1.H.264-NTb", false)]
         [TestCase("The.Simpsons.2017.1080p.WEB-DL.DD5.1.H.264.Remux.-NTb", false)]
         [TestCase("Fast.and.Furious.Presents.Hobbs.and.Shaw.2019.1080p.AMZN.WEB-DL.DDP5.1.H.264-NTG", false)]
+        [TestCase("Legacies.2020.1080p.AMZN.WEB...", false)]
+        [TestCase("Legacies.2020.1080p.AMZN.WEB.", false)]
+        [TestCase("Movie Title - 2020 1080p Viva MKV WEB", false)]
         public void should_parse_webdl1080p_quality(string title, bool proper)
         {
             ParseAndVerifyQuality(title, Source.WEBDL, proper, Resolution.R1080p);
@@ -315,27 +327,70 @@ namespace NzbDrone.Core.Test.ParserTests
             }
         }
 
+        [TestCase("Movie - 2018 [HDTV-1080p]")]
         [TestCase("Saturday.Night.Live.Vintage.S10E09.Eddie.Murphy.The.Honeydrippers.1080i.UPSCALE.HDTV.DD5.1.MPEG2-zebra")]
-        [TestCase("Dexter - S01E01 - Title [HDTV-1080p]")]
-        [TestCase("[CR] Sailor Moon - 004 [480p][48CE2D0F]")]
-        [TestCase("White.Van.Man.2011.S02E01.WS.PDTV.x264-REPACK-TLA")]
-        public void should_parse_quality_from_name(string title)
+        [TestCase("Movie.Title.2018.Bluray720p")]
+        [TestCase("Movie.Title.2018.Bluray1080p")]
+        [TestCase("Movie.Title.2018.Bluray2160p")]
+        [TestCase("Movie.Title.2018.848x480.dvd")]
+        [TestCase("Movie.Title.2018.848x480.Bluray")]
+        [TestCase("Movie.Title.2018.1280x720.Bluray")]
+        [TestCase("Movie.Title.2018.1920x1080.Bluray")]
+        public void should_parse_full_quality_from_name(string title)
         {
-            QualityParser.ParseQuality(title).QualityDetectionSource.Should().Be(QualityDetectionSource.Name);
+            var result = QualityParser.ParseQuality(title);
+
+            result.SourceDetectionSource.Should().Be(QualityDetectionSource.Name);
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Name);
+        }
+
+        [TestCase("Movie.Title.2018.848x480")]
+        [TestCase("Movie.Title.2018.1280x720")]
+        [TestCase("Movie.Title.2018.1920x1080")]
+        public void should_parse_resolution_from_name(string title)
+        {
+            var result = QualityParser.ParseQuality(title);
+
+            result.SourceDetectionSource.Should().Be(QualityDetectionSource.Unknown);
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Name);
+        }
+
+        [TestCase("White.Van.Man.2011.S02E01.WS.PDTV.x264-REPACK-TLA")]
+        [TestCase("Series.Title.S01E01.Bluray")]
+        [TestCase("Series.Title.S01E01.HD.TV")]
+        [TestCase("Series.Title.S01E01.SD.TV")]
+        public void should_parse_source_from_name(string title)
+        {
+            var result = QualityParser.ParseQuality(title);
+
+            result.SourceDetectionSource.Should().Be(QualityDetectionSource.Name);
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Unknown);
         }
 
         [TestCase("Revolution.S01E02.Chained.Heat.mkv")]
-        [TestCase("Star.Wars.Episode.VII.The.Force.Awakens.mk3d")]
         [TestCase("Dexter - S01E01 - Title.avi")]
         [TestCase("the_x-files.9x18.sunshine_days.avi")]
         [TestCase("[CR] Sailor Moon - 004 [48CE2D0F].avi")]
         public void should_parse_quality_from_extension(string title)
         {
-            QualityParser.ParseQuality(title).QualityDetectionSource.Should().Be(QualityDetectionSource.Extension);
+            var result = QualityParser.ParseQuality(title);
+
+            result.SourceDetectionSource.Should().Be(QualityDetectionSource.Extension);
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Extension);
         }
 
-        [TestCase("Movie.Title.2016.1080p.KORSUB.WEBRip.x264.AAC2.0-RADARR", "korsub")]
-        [TestCase("Movie.Title.2016.1080p.KORSUBS.WEBRip.x264.AAC2.0-RADARR", "korsubs")]
+        [TestCase("Revolution.S01E02.Chained.Heat.1080p.mkv")]
+        [TestCase("Dexter - S01E01 - Title.720p.avi")]
+        public void should_parse_resolution_from_name_and_source_from_extension(string title)
+        {
+            var result = QualityParser.ParseQuality(title);
+
+            result.SourceDetectionSource.Should().Be(QualityDetectionSource.Extension);
+            result.ResolutionDetectionSource.Should().Be(QualityDetectionSource.Name);
+        }
+
+        [TestCase("Movie.Title.2016.1080p.KORSUB.WEBRip.x264.AAC2.0-RADARR", "KORSUB")]
+        [TestCase("Movie.Title.2016.1080p.KORSUBS.WEBRip.x264.AAC2.0-RADARR", "KORSUBS")]
         [TestCase("Wonder Woman 2017 HC 720p HDRiP DD5 1 x264-LEGi0N", "Generic Hardcoded Subs")]
         [TestCase("Ghost.In.The.Shell.2017.720p.SUBBED.HDRip.V2.XViD-26k.avi", "Generic Hardcoded Subs")]
         public void should_parse_hardcoded_subs(string postTitle, string sub)

@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import getProgressBarKind from 'Utilities/Movie/getProgressBarKind';
-import { sizes } from 'Helpers/Props';
 import ProgressBar from 'Components/ProgressBar';
+import { sizes } from 'Helpers/Props';
+import getProgressBarKind from 'Utilities/Movie/getProgressBarKind';
 import styles from './MovieIndexProgressBar.css';
 
 function MovieIndexProgressBar(props) {
@@ -23,7 +23,7 @@ function MovieIndexProgressBar(props) {
       progress={progress}
       kind={getProgressBarKind(status, monitored, hasFile)}
       size={detailedProgressBar ? sizes.MEDIUM : sizes.SMALL}
-      showText={detailedProgressBar}
+      showText={false} // Hide until we have multi version support
       width={posterWidth}
     />
   );

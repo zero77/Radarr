@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import split from 'Utilities/String/split';
-import { kinds } from 'Helpers/Props';
 import Card from 'Components/Card';
 import Label from 'Components/Label';
-import TagList from 'Components/TagList';
 import ConfirmModal from 'Components/Modal/ConfirmModal';
+import TagList from 'Components/TagList';
+import { kinds } from 'Helpers/Props';
+import split from 'Utilities/String/split';
+import translate from 'Utilities/String/translate';
 import EditRestrictionModalConnector from './EditRestrictionModalConnector';
 import styles from './Restriction.css';
 
@@ -122,7 +123,7 @@ class Restriction extends Component {
           kind={kinds.DANGER}
           title="Delete Restriction"
           message={'Are you sure you want to delete this restriction?'}
-          confirmLabel="Delete"
+          confirmLabel={translate('Delete')}
           onConfirm={this.onConfirmDeleteRestriction}
           onCancel={this.onDeleteRestrictionModalClose}
         />

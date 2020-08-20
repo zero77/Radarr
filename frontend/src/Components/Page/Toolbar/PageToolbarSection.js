@@ -1,21 +1,20 @@
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import classNames from 'classnames';
-import { forEach } from 'Helpers/elementChildren';
-import { align, icons } from 'Helpers/Props';
-import dimensions from 'Styles/Variables/dimensions';
-import SpinnerIcon from 'Components/SpinnerIcon';
 import Measure from 'Components/Measure';
 import Menu from 'Components/Menu/Menu';
 import MenuContent from 'Components/Menu/MenuContent';
 import MenuItem from 'Components/Menu/MenuItem';
 import ToolbarMenuButton from 'Components/Menu/ToolbarMenuButton';
+import SpinnerIcon from 'Components/SpinnerIcon';
+import { forEach } from 'Helpers/elementChildren';
+import { align, icons } from 'Helpers/Props';
+import dimensions from 'Styles/Variables/dimensions';
 import styles from './PageToolbarSection.css';
 
 const BUTTON_WIDTH = parseInt(dimensions.toolbarButtonWidth);
 const SEPARATOR_MARGIN = parseInt(dimensions.toolbarSeparatorMargin);
 const SEPARATOR_WIDTH = 2 * SEPARATOR_MARGIN + 1;
-const SEPARATOR_NAME = 'PageToolbarSeparator';
 
 function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
   let buttonCount = 0;
@@ -23,9 +22,7 @@ function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
   const validChildren = [];
 
   forEach(children, (child) => {
-    const name = child.type.name;
-
-    if (name === SEPARATOR_NAME) {
+    if (Object.keys(child.props).length === 0) {
       separatorCount++;
     } else {
       buttonCount++;
@@ -68,12 +65,14 @@ function calculateOverflowItems(children, isMeasured, width, collapseButtons) {
   }
 
   validChildren.forEach((child, index) => {
+    const isSeparator = Object.keys(child.props).length === 0;
+
     if (actualButtons < maxButtons) {
-      if (child.type.name !== SEPARATOR_NAME) {
+      if (!isSeparator) {
         buttons.push(child);
         actualButtons++;
       }
-    } else if (child.type.name !== SEPARATOR_NAME) {
+    } else if (!isSeparator) {
       overflowItems.push(child.props);
     }
   });

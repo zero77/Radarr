@@ -1,10 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { icons, kinds, sizes } from 'Helpers/Props';
 import HeartRating from 'Components/HeartRating';
 import Icon from 'Components/Icon';
 import Label from 'Components/Label';
 import Link from 'Components/Link/Link';
+import Tooltip from 'Components/Tooltip/Tooltip';
+import { icons, kinds, sizes, tooltipPositions } from 'Helpers/Props';
+import MovieDetailsLinks from 'Movie/Details/MovieDetailsLinks';
 import MoviePoster from 'Movie/MoviePoster';
 import AddNewMovieModal from './AddNewMovieModal';
 import styles from './AddNewMovieSearchResult.css';
@@ -39,7 +41,7 @@ class AddNewMovieSearchResult extends Component {
     this.setState({ isNewAddMovieModalOpen: false });
   }
 
-  onTMDBLinkPress = (event) => {
+  onExternalLinkPress = (event) => {
     event.stopPropagation();
   }
 
@@ -49,6 +51,8 @@ class AddNewMovieSearchResult extends Component {
   render() {
     const {
       tmdbId,
+      imdbId,
+      youTubeTrailerId,
       title,
       titleSlug,
       year,
@@ -116,18 +120,6 @@ class AddNewMovieSearchResult extends Component {
                     title="Movie is on Net Import Exclusion List"
                   />
               }
-
-              <Link
-                className={styles.tmdbLink}
-                to={`https://www.themoviedb.org/movie/${tmdbId}`}
-                onPress={this.onTMDBLinkPress}
-              >
-                <Icon
-                  className={styles.tmdbLinkIcon}
-                  name={icons.EXTERNAL_LINK}
-                  size={28}
-                />
-              </Link>
             </div>
 
             <div>
@@ -144,6 +136,32 @@ class AddNewMovieSearchResult extends Component {
                     {studio}
                   </Label>
               }
+
+              <Tooltip
+                anchor={
+                  <Label
+                    size={sizes.LARGE}
+                  >
+                    <Icon
+                      name={icons.EXTERNAL_LINK}
+                      size={13}
+                    />
+
+                    <span className={styles.links}>
+                      Links
+                    </span>
+                  </Label>
+                }
+                tooltip={
+                  <MovieDetailsLinks
+                    tmdbId={tmdbId}
+                    youTubeTrailerId={youTubeTrailerId}
+                    imdbId={imdbId}
+                  />
+                }
+                kind={kinds.INVERSE}
+                position={tooltipPositions.BOTTOM}
+              />
 
               {
                 status === 'ended' &&
@@ -179,6 +197,8 @@ class AddNewMovieSearchResult extends Component {
 
 AddNewMovieSearchResult.propTypes = {
   tmdbId: PropTypes.number.isRequired,
+  imdbId: PropTypes.string,
+  youTubeTrailerId: PropTypes.string,
   title: PropTypes.string.isRequired,
   titleSlug: PropTypes.string.isRequired,
   year: PropTypes.number.isRequired,

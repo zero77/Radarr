@@ -32,6 +32,7 @@
 .added,
 .inCinemas,
 .physicalRelease,
+.digitalRelease,
 .runtime,
 .genres {
   composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
@@ -44,6 +45,12 @@
   composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
 
   flex: 0 0 100px;
+}
+
+.year {
+  composes: headerCell from '~Components/Table/VirtualTableHeaderCell.css';
+
+  flex: 0 0 80px;
 }
 
 .path {

@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import { inputTypes, sizes } from 'Helpers/Props';
 import FieldSet from 'Components/FieldSet';
-import LoadingIndicator from 'Components/Loading/LoadingIndicator';
 import Form from 'Components/Form/Form';
 import FormGroup from 'Components/Form/FormGroup';
-import FormLabel from 'Components/Form/FormLabel';
 import FormInputGroup from 'Components/Form/FormInputGroup';
+import FormLabel from 'Components/Form/FormLabel';
+import LoadingIndicator from 'Components/Loading/LoadingIndicator';
+import { inputTypes, sizes } from 'Helpers/Props';
+import translate from 'Utilities/String/translate';
 
 function DownloadClientOptions(props) {
   const {
@@ -33,7 +34,7 @@ function DownloadClientOptions(props) {
       {
         hasSettings && !isFetching && !error &&
           <div>
-            <FieldSet legend="Completed Download Handling">
+            <FieldSet legend={translate('CompletedDownloadHandling')}>
               <Form>
                 <FormGroup size={sizes.MEDIUM}>
                   <FormLabel>Enable</FormLabel>
@@ -85,7 +86,7 @@ function DownloadClientOptions(props) {
             </FieldSet>
 
             <FieldSet
-              legend="Failed Download Handling"
+              legend={translate('FailedDownloadHandling')}
             >
               <Form>
                 <FormGroup size={sizes.MEDIUM}>

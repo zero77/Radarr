@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using NLog;
 using NzbDrone.Common.Extensions;
@@ -21,12 +21,14 @@ namespace NzbDrone.Core.NetImport
         private readonly Logger _logger;
         private readonly INetImportFactory _netImportFactory;
         private readonly IMovieService _movieService;
+        private readonly IAddMovieService _addMovieService;
         private readonly ISearchForNewMovie _movieSearch;
         private readonly IConfigService _configService;
         private readonly IImportExclusionsService _exclusionService;
 
         public NetImportSearchService(INetImportFactory netImportFactory,
                                       IMovieService movieService,
+                                      IAddMovieService addMovieService,
                                       ISearchForNewMovie movieSearch,
                                       IConfigService configService,
                                       IImportExclusionsService exclusionService,
@@ -34,6 +36,7 @@ namespace NzbDrone.Core.NetImport
         {
             _netImportFactory = netImportFactory;
             _movieService = movieService;
+            _addMovieService = addMovieService;
             _movieSearch = movieSearch;
             _exclusionService = exclusionService;
             _logger = logger;
@@ -129,11 +132,11 @@ namespace NzbDrone.Core.NetImport
                 {
                     if (_exclusionService.IsMovieExcluded(mapped.TmdbId))
                     {
-                        _logger.Debug($"{mapped.Title} ({mapped.TitleSlug}) will not be added since it was found on the exclusions list");
+                        _logger.Debug($"{mapped.Title} ({mapped.TmdbId}) will not be added since it was found on the exclusions list");
                     }
                     else if (_movieService.MovieExists(mapped))
                     {
-                        _logger.Trace($"{mapped.Title} ({mapped.TitleSlug}) will not be added since it exists in Library");
+                        _logger.Trace($"{mapped.Title} ({mapped.TmdbId}) will not be added since it exists in Library");
                     }
                     else
                     {
@@ -151,45 +154,47 @@ namespace NzbDrone.Core.NetImport
                 _logger.Info($"Adding {moviesToAdd.Count()} movies from your auto enabled lists to library");
             }
 
-            _movieService.AddMovies(moviesToAdd);
+            _addMovieService.AddMovies(moviesToAdd, true);
         }
 
         private void CleanLibrary(List<Movie> movies)
         {
             var moviesToUpdate = new List<Movie>();
 
-            if (_configService.ListSyncLevel != "disabled")
+            if (_configService.ListSyncLevel == "disabled")
             {
-                var moviesInLibrary = _movieService.GetAllMovies();
-                foreach (var movie in moviesInLibrary)
+                return;
+            }
+
+            var moviesInLibrary = _movieService.GetAllMovies();
+            foreach (var movie in moviesInLibrary)
+            {
+                var movieExists = movies.Any(c => c.TmdbId == movie.TmdbId || c.ImdbId == movie.ImdbId);
+
+                if (!movieExists)
                 {
-                    var movieExists = movies.Any(c => c.TmdbId == movie.TmdbId || c.ImdbId == movie.ImdbId);
-
-                    if (!movieExists)
+                    switch (_configService.ListSyncLevel)
                     {
-                        switch (_configService.ListSyncLevel)
-                        {
-                            case "logOnly":
-                                _logger.Info("{0} was in your library, but not found in your lists --> You might want to unmonitor or remove it", movie);
-                                break;
-                            case "keepAndUnmonitor":
-                                _logger.Info("{0} was in your library, but not found in your lists --> Keeping in library but Unmonitoring it", movie);
-                                movie.Monitored = false;
-                                moviesToUpdate.Add(movie);
-                                break;
-                            case "removeAndKeep":
-                                _logger.Info("{0} was in your library, but not found in your lists --> Removing from library (keeping files)", movie);
-                                _movieService.DeleteMovie(movie.Id, false);
-                                break;
-                            case "removeAndDelete":
-                                _logger.Info("{0} was in your library, but not found in your lists --> Removing from library and deleting files", movie);
-                                _movieService.DeleteMovie(movie.Id, true);
+                        case "logOnly":
+                            _logger.Info("{0} was in your library, but not found in your lists --> You might want to unmonitor or remove it", movie);
+                            break;
+                        case "keepAndUnmonitor":
+                            _logger.Info("{0} was in your library, but not found in your lists --> Keeping in library but Unmonitoring it", movie);
+                            movie.Monitored = false;
+                            moviesToUpdate.Add(movie);
+                            break;
+                        case "removeAndKeep":
+                            _logger.Info("{0} was in your library, but not found in your lists --> Removing from library (keeping files)", movie);
+                            _movieService.DeleteMovie(movie.Id, false);
+                            break;
+                        case "removeAndDelete":
+                            _logger.Info("{0} was in your library, but not found in your lists --> Removing from library and deleting files", movie);
+                            _movieService.DeleteMovie(movie.Id, true);
 
-                                //TODO: for some reason the files are not deleted in this case... any idea why?
-                                break;
-                            default:
-                                break;
-                        }
+                            //TODO: for some reason the files are not deleted in this case... any idea why?
+                            break;
+                        default:
+                            break;
                     }
                 }
             }

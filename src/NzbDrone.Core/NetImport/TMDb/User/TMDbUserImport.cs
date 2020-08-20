@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NLog;
 using NzbDrone.Common.Cloud;
 using NzbDrone.Common.Http;
 using NzbDrone.Common.Serializer;
 using NzbDrone.Core.Configuration;
 using NzbDrone.Core.MetadataSource;
-using NzbDrone.Core.MetadataSource.SkyHook.Resource;
 using NzbDrone.Core.Parser;
 
 namespace NzbDrone.Core.NetImport.TMDb.User
@@ -14,11 +13,12 @@ namespace NzbDrone.Core.NetImport.TMDb.User
     {
         public TMDbUserImport(IRadarrCloudRequestBuilder requestBuilder,
                                  IHttpClient httpClient,
+                                 INetImportStatusService netImportStatusService,
                                  IConfigService configService,
                                  IParsingService parsingService,
                                  ISearchForNewMovie searchForNewMovie,
                                  Logger logger)
-        : base(requestBuilder, httpClient, configService, parsingService, searchForNewMovie, logger)
+        : base(requestBuilder, httpClient, netImportStatusService, configService, parsingService, searchForNewMovie, logger)
         {
         }
 
@@ -28,7 +28,7 @@ namespace NzbDrone.Core.NetImport.TMDb.User
 
         public override IParseNetImportResponse GetParser()
         {
-            return new TMDbParser(_skyhookProxy);
+            return new TMDbParser();
         }
 
         public override INetImportRequestGenerator GetRequestGenerator()
@@ -57,16 +57,16 @@ namespace NzbDrone.Core.NetImport.TMDb.User
 
                 var request = requestBuilder.Build();
 
-                var response = Json.Deserialize<AuthRefreshTokenResponse>(_httpClient.Execute(request).Content);
+                var response = Json.Deserialize<AuthRefreshTokenResource>(_httpClient.Execute(request).Content);
 
                 var oAuthRequest = new HttpRequestBuilder(Settings.OAuthUrl)
-                    .AddQueryParam("request_token", response.request_token)
+                    .AddQueryParam("request_token", response.RequestToken)
                     .Build();
 
                 return new
                 {
                     OauthUrl = oAuthRequest.Url.ToString(),
-                    RequestToken = response.request_token
+                    RequestToken = response.RequestToken
                 };
             }
             else if (action == "getOAuthToken")
@@ -82,12 +82,12 @@ namespace NzbDrone.Core.NetImport.TMDb.User
 
                 var request = requestBuilder.Build();
 
-                var response = Json.Deserialize<AuthAccessTokenResponse>(_httpClient.Execute(request).Content);
+                var response = Json.Deserialize<AuthAccessTokenResource>(_httpClient.Execute(request).Content);
 
                 return new
                 {
-                    accountId = response.account_id,
-                    accessToken = response.access_token,
+                    accountId = response.AccountId,
+                    accessToken = response.AccessToken,
                 };
             }
 

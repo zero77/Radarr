@@ -16,10 +16,19 @@ namespace NzbDrone.Core.Parser
     {
         private static readonly Logger Logger = NzbDroneLogger.GetLogger(typeof(Parser));
 
+        private static readonly Regex ReportYearRegex = new Regex(@"^.*(?<year>(19|20)\d{2}).*$", RegexOptions.Compiled);
+
+        private static readonly Regex EditionRegex = new Regex(@"\(?\b(?<edition>(((Recut.|Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final(?=(.(Cut|Edition|Version)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|Edition|Restored|((2|3|4)in1))))))\b\)?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly Regex ReportEditionRegex = new Regex(@"^.+?" + EditionRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private static readonly Regex[] ReportMovieTitleRegex = new[]
         {
+            //Some german or french tracker formats (missing year, ...) (Only applies to german and French/TrueFrench releases) - see ParserFixture for examples and tests
+            new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(" + EditionRegex + @".{1,3})?(?:(?<!(19|20)\d{2}.*?)(German|French|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
+
             //Special, Despecialized, etc. Edition Movies, e.g: Mission.Impossible.3.Special.Edition.2011
-            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*\(?\b(?<edition>(((Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final(?=(.(Cut|Edition|Version)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|Edition|Restored|((2|3|4)in1))))))\b\)?.{1,3}(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\]|\W\d+)))+(\W+|_|$)(?!\\)",
+            new Regex(@"^(?<title>(?![(\[]).+?)?(?:(?:[-_\W](?<![)\[!]))*" + EditionRegex + @".{1,3}(?<year>(1(8|9)|20)\d{2}(?!p|i|\d+|\]|\W\d+)))+(\W+|_|$)(?!\\)",
                           RegexOptions.IgnoreCase | RegexOptions.Compiled),
 
             //Special, Despecialized, etc. Edition Movies, e.g: Mission.Impossible.3.2011.Special.Edition //TODO: Seems to slow down parsing heavily!
@@ -43,16 +52,6 @@ namespace NzbDrone.Core.Parser
         {
             //When year comes first.
             new Regex(@"^(?:(?:[-_\W](?<![)!]))*(?<year>(19|20)\d{2}(?!p|i|\d+|\W\d+)))+(\W+|_|$)(?<title>.+?)?$")
-        };
-
-        private static readonly Regex[] ReportMovieTitleLenientRegexBefore = new[]
-        {
-            //Some german or french tracker formats
-            new Regex(@"^(?<title>(?![(\[]).+?)((\W|_))(?:(?<!(19|20)\d{2}.)(German|French|TrueFrench))(.+?)(?=((19|20)\d{2}|$))(?<year>(19|20)\d{2}(?!p|i|\d+|\]|\W\d+))?(\W+|_|$)(?!\\)", RegexOptions.IgnoreCase | RegexOptions.Compiled),
-        };
-
-        private static readonly Regex[] ReportMovieTitleLenientRegexAfter = new Regex[]
-        {
         };
 
         private static readonly Regex[] RejectHashedReleasesRegex = new Regex[]
@@ -90,7 +89,7 @@ namespace NzbDrone.Core.Parser
         private static readonly Regex FileExtensionRegex = new Regex(@"\.[a-z0-9]{2,4}$",
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static readonly Regex ReportImdbId = new Regex(@"(?<imdbid>tt\d{7})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex ReportImdbId = new Regex(@"(?<imdbid>tt\d{7,8})", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly RegexReplace SimpleTitleRegex = new RegexReplace(@"\s*(?:480[ip]|576[ip]|720[ip]|1080[ip]|2160[ip]|[xh][\W_]?26[45]|DD\W?5\W1|[<>?*:|]|848x480|1280x720|1920x1080|(8|10)b(it)?)",
                                                                 string.Empty,
@@ -98,7 +97,7 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex SimpleReleaseTitleRegex = new Regex(@"\s*(?:[<>?*:|])", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly RegexReplace WebsitePrefixRegex = new RegexReplace(@"^\[\s*[-a-z]+(\.[a-z]+)+\s*\][- ]*|^www\.[a-z]+\.(?:com|net)[ -]*",
+        private static readonly RegexReplace WebsitePrefixRegex = new RegexReplace(@"^\[\s*[-a-z]+(\.[a-z]+)+\s*\][- ]*|^www\.[a-z]+\.(?:com|net|org)[ -]*",
                                                                 string.Empty,
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -106,7 +105,7 @@ namespace NzbDrone.Core.Parser
                                                         string.Empty,
                                                         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        private static readonly RegexReplace CleanReleaseGroupRegex = new RegexReplace(@"(-(RP|1|NZBGeek|Obfuscated|Obfuscation|Scrambled|sample|Pre|postbot|xpost|Rakuv[a-z0-9]*|WhiteRev|BUYMORE|AsRequested|AlternativeToRequested|GEROV|Z0iDS3N|Chamele0n|4P|4Planet))+$",
+        private static readonly RegexReplace CleanReleaseGroupRegex = new RegexReplace(@"(-(RP|1|NZBGeek|Obfuscated|Obfuscation|Scrambled|sample|Pre|postbot|xpost|Rakuv[a-z0-9]*|WhiteRev|BUYMORE|AsRequested|AlternativeToRequested|GEROV|Z0iDS3N|Chamele0n|4P|4Planet|AlteZachen))+$",
                                                                 string.Empty,
                                                                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -135,10 +134,6 @@ namespace NzbDrone.Core.Parser
 
         private static readonly Regex RequestInfoRegex = new Regex(@"^(?:\[.+?\])+", RegexOptions.Compiled);
 
-        private static readonly Regex ReportYearRegex = new Regex(@"^.*(?<year>(19|20)\d{2}).*$", RegexOptions.Compiled);
-
-        private static readonly Regex ReportEditionRegex = new Regex(@"\b(?<edition>(((Extended.|Ultimate.)?(Director.?s|Collector.?s|Theatrical|Ultimate|Final(?=(.(Cut|Edition|Version)))|Extended|Rogue|Special|Despecialized|\d{2,3}(th)?.Anniversary)(.(Cut|Edition|Version))?(.(Extended|Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit))?|((Uncensored|Remastered|Unrated|Uncut|IMAX|Fan.?Edit|Edition|Restored|((2|3|4)in1))))))\)?\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         private static readonly string[] Numbers = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         private static Dictionary<string, string> _umlautMappings = new Dictionary<string, string>
         {
@@ -147,29 +142,30 @@ namespace NzbDrone.Core.Parser
             { "ü", "ue" },
         };
 
-        public static ParsedMovieInfo ParseMoviePath(string path, bool isLenient)
+        public static ParsedMovieInfo ParseMoviePath(string path)
         {
             var fileInfo = new FileInfo(path);
 
-            var result = ParseMovieTitle(fileInfo.Name, isLenient, true);
+            var result = ParseMovieTitle(fileInfo.Name, true);
 
             if (result == null)
             {
                 Logger.Debug("Attempting to parse movie info using directory and file names. {0}", fileInfo.Directory.Name);
-                result = ParseMovieTitle(fileInfo.Directory.Name + " " + fileInfo.Name, isLenient);
+                result = ParseMovieTitle(fileInfo.Directory.Name + " " + fileInfo.Name);
             }
 
             if (result == null)
             {
                 Logger.Debug("Attempting to parse movie info using directory name. {0}", fileInfo.Directory.Name);
-                result = ParseMovieTitle(fileInfo.Directory.Name + fileInfo.Extension, isLenient);
+                result = ParseMovieTitle(fileInfo.Directory.Name + fileInfo.Extension);
             }
 
             return result;
         }
 
-        public static ParsedMovieInfo ParseMovieTitle(string title, bool isLenient, bool isDir = false)
+        public static ParsedMovieInfo ParseMovieTitle(string title, bool isDir = false)
         {
+            var originalTitle = title;
             try
             {
                 if (!ValidateBeforeParsing(title))
@@ -190,6 +186,9 @@ namespace NzbDrone.Core.Parser
                 }
 
                 var releaseTitle = RemoveFileExtension(title);
+
+                //Trim dashes from end
+                releaseTitle = releaseTitle.Trim('-', '_');
 
                 releaseTitle = releaseTitle.Replace("【", "[").Replace("】", "]");
 
@@ -218,13 +217,6 @@ namespace NzbDrone.Core.Parser
                     allRegexes.AddRange(ReportMovieTitleFolderRegex);
                 }
 
-                if (isLenient)
-                {
-                    allRegexes.InsertRange(0, ReportMovieTitleLenientRegexBefore);
-
-                    allRegexes.AddRange(ReportMovieTitleLenientRegexAfter);
-                }
-
                 foreach (var regex in allRegexes)
                 {
                     var match = regex.Matches(simpleTitle);
@@ -239,25 +231,16 @@ namespace NzbDrone.Core.Parser
                             if (result != null)
                             {
                                 //TODO: Add tests for this!
-                                var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(title, string.Empty);
+                                var simpleReleaseTitle = SimpleReleaseTitleRegex.Replace(releaseTitle, string.Empty);
 
-                                if (result.MovieTitle.IsNotNullOrWhiteSpace())
+                                var simpleTitleReplaceString = match[0].Groups["title"].Success ? match[0].Groups["title"].Value : result.MovieTitle;
+
+                                if (simpleTitleReplaceString.IsNotNullOrWhiteSpace())
                                 {
-                                    simpleReleaseTitle = simpleReleaseTitle.Replace(result.MovieTitle, result.MovieTitle.Contains(".") ? "A.Movie" : "A Movie");
+                                    simpleReleaseTitle = simpleReleaseTitle.Replace(simpleTitleReplaceString, simpleTitleReplaceString.Contains(".") ? "A.Movie" : "A Movie");
                                 }
 
-                                result.Languages = LanguageParser.EnhanceLanguages(simpleReleaseTitle, LanguageParser.ParseLanguages(releaseTitle));
-                                Logger.Debug("Languages parsed: {0}", string.Join(", ", result.Languages));
-
-                                result.Quality = QualityParser.ParseQuality(title);
-                                Logger.Debug("Quality parsed: {0}", result.Quality);
-
-                                if (result.Edition.IsNullOrWhiteSpace())
-                                {
-                                    result.Edition = ParseEdition(simpleReleaseTitle);
-                                }
-
-                                result.ReleaseGroup = ParseReleaseGroup(releaseTitle);
+                                result.ReleaseGroup = ParseReleaseGroup(simpleReleaseTitle);
 
                                 var subGroup = GetSubGroup(match);
                                 if (!subGroup.IsNullOrWhiteSpace())
@@ -267,12 +250,26 @@ namespace NzbDrone.Core.Parser
 
                                 Logger.Debug("Release Group parsed: {0}", result.ReleaseGroup);
 
+                                result.Languages = LanguageParser.ParseLanguages(result.ReleaseGroup.IsNotNullOrWhiteSpace() ? simpleReleaseTitle.Replace(result.ReleaseGroup, "RlsGrp") : simpleReleaseTitle);
+                                Logger.Debug("Languages parsed: {0}", string.Join(", ", result.Languages));
+
+                                result.Quality = QualityParser.ParseQuality(title);
+                                Logger.Debug("Quality parsed: {0}", result.Quality);
+
+                                if (result.Edition.IsNullOrWhiteSpace())
+                                {
+                                    result.Edition = ParseEdition(simpleReleaseTitle);
+                                    Logger.Debug("Edition parsed: {0}", result.Edition);
+                                }
+
                                 result.ReleaseHash = GetReleaseHash(match);
                                 if (!result.ReleaseHash.IsNullOrWhiteSpace())
                                 {
                                     Logger.Debug("Release Hash parsed: {0}", result.ReleaseHash);
                                 }
 
+                                result.OriginalTitle = originalTitle;
+                                result.ReleaseTitle = releaseTitle;
                                 result.SimpleReleaseTitle = simpleReleaseTitle;
 
                                 result.ImdbId = ParseImdbId(simpleReleaseTitle);
@@ -307,7 +304,7 @@ namespace NzbDrone.Core.Parser
             {
                 if (match.Groups["imdbid"].Value != null)
                 {
-                    if (match.Groups["imdbid"].Length == 9)
+                    if (match.Groups["imdbid"].Length == 9 || match.Groups["imdbid"].Length == 10)
                     {
                         return match.Groups["imdbid"].Value;
                     }
@@ -377,7 +374,7 @@ namespace NzbDrone.Core.Parser
             return value;
         }
 
-        public static string CleanSeriesTitle(this string title)
+        public static string CleanMovieTitle(this string title)
         {
             long number = 0;
 
@@ -472,7 +469,7 @@ namespace NzbDrone.Core.Parser
                 return null;
             }
 
-            var movieName = matchCollection[0].Groups["title"].Value./*Replace('.', ' ').*/Replace('_', ' ');
+            var movieName = matchCollection[0].Groups["title"].Value.Replace('_', ' ');
             movieName = RequestInfoRegex.Replace(movieName, "").Trim(' ');
 
             var parts = movieName.Split('.');
@@ -486,13 +483,24 @@ namespace NzbDrone.Core.Parser
                 {
                     nextPart = parts[n + 1];
                 }
+                else
+                {
+                    nextPart = "";
+                }
 
-                if (part.Length == 1 && part.ToLower() != "a" && !int.TryParse(part, out n))
+                if (part.Length == 1 && part.ToLower() != "a" && !int.TryParse(part, out _) &&
+                    (previousAcronym || n < parts.Length - 1) &&
+                    (previousAcronym || nextPart.Length != 1 || !int.TryParse(nextPart, out _)))
                 {
                     movieName += part + ".";
                     previousAcronym = true;
                 }
-                else if (part.ToLower() == "a" && (previousAcronym == true || nextPart.Length == 1))
+                else if (part.ToLower() == "a" && (previousAcronym || nextPart.Length == 1))
+                {
+                    movieName += part + ".";
+                    previousAcronym = true;
+                }
+                else if (part.ToLower() == "dr")
                 {
                     movieName += part + ".";
                     previousAcronym = true;
